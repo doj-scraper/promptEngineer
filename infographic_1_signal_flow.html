@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dual-Prompt Architecture - Signal Flow</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0d0d12;
+            color: #e0e0e0;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            min-height: 100vh;
+            overflow-x: auto;
+        }
+        .rack-container {
+            display: flex;
+            gap: 20px;
+            padding: 40px;
+            min-width: 1200px;
+            background: 
+                linear-gradient(90deg, rgba(0,240,255,0.03) 1px, transparent 1px),
+                linear-gradient(rgba(0,240,255,0.03) 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+        .module {
+            width: 280px;
+            background: linear-gradient(180deg, #1a1a24 0%, #12121a 100%);
+            border: 1px solid #2a2a3a;
+            border-radius: 4px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05);
+            position: relative;
+        }
+        .module::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; height: 3px;
+            background: linear-gradient(90deg, #00f0ff, #ff006e);
+            border-radius: 4px 4px 0 0;
+        }
+        .module-header {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #888;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #2a2a3a;
+            padding-bottom: 10px;
+        }
+        .knob-container {
+            display: flex;
+            justify-content: space-between;
+            margin: 20px 0;
+        }
+        .knob-wrapper {
+            text-align: center;
+        }
+        .knob {
+            width: 50px; height: 50px;
+            border-radius: 50%;
+            background: conic-gradient(from 180deg, #ff9e00 0deg, #ff9e00 270deg, #333 270deg);
+            border: 3px solid #444;
+            margin: 0 auto 8px;
+            position: relative;
+        }
+        .knob::after {
+            content: '';
+            position: absolute;
+            width: 4px; height: 20px;
+            background: white;
+            left: 50%; top: 5px;
+            transform: translateX(-50%);
+            transform-origin: center;
+            transform: translateX(-50%) rotate(45deg);
+        }
+        .knob-label {
+            font-size: 0.65rem;
+            color: #666;
+            text-transform: uppercase;
+        }
+        .cv-connection {
+            display: flex;
+            align-items: center;
+            margin: 15px 0;
+            font-size: 0.8rem;
+            font-family: monospace;
+        }
+        .jack {
+            width: 12px; height: 12px;
+            background: radial-gradient(circle at 30% 30%, #ff9e00, #cc6600);
+            border-radius: 50%;
+            margin-right: 10px;
+            box-shadow: 0 0 10px rgba(255,158,0,0.3);
+        }
+        .cable {
+            position: absolute;
+            width: 60px;
+            height: 100px;
+            border-right: 3px solid #00f0ff;
+            border-top: 3px solid #00f0ff;
+            right: -40px; top: 50%;
+            z-index: 10;
+            filter: drop-shadow(0 0 5px rgba(0,240,255,0.5));
+        }
+        .cable.magenta {
+            border-color: #ff006e;
+            filter: drop-shadow(0 0 5px rgba(255,0,110,0.5));
+            transform: translateY(20px);
+        }
+        .led-meter {
+            display: flex;
+            gap: 3px;
+            margin-top: 10px;
+            justify-content: center;
+        }
+        .led {
+            width: 6px; height: 12px;
+            background: #333;
+            border-radius: 1px;
+        }
+        .led.active {
+            background: #00f0ff;
+            box-shadow: 0 0 8px #00f0ff;
+        }
+        .led.hot {
+            background: #ff006e;
+            box-shadow: 0 0 8px #ff006e;
+        }
+        .section-tag {
+            display: inline-block;
+            padding: 4px 8px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid #444;
+            border-radius: 3px;
+            font-size: 0.7rem;
+            margin: 2px;
+            font-family: monospace;
+        }
+        .flow-label {
+            position: absolute;
+            right: -80px;
+            top: 40%;
+            font-size: 0.7rem;
+            color: #00f0ff;
+            font-family: monospace;
+            transform: rotate(-90deg);
+        }
+    </style>
+</head>
+<body>
+    <div class="rack-container">
+        <!-- Global Module -->
+        <div class="module" style="border-color: #ff9e00;">
+            <div class="module-header">Global Style Generator</div>
+            <div class="cv-connection">
+                <div class="jack"></div>
+                <span>GENRE_INPUT: 90s_Emo</span>
+            </div>
+            <div class="knob-container">
+                <div class="knob-wrapper">
+                    <div class="knob" style="background: conic-gradient(from 180deg, #ff9e00 0deg, #ff9e00 252deg, #333 252deg);"></div>
+                    <div class="knob-label">Tempo</div>
+                </div>
+                <div class="knob-wrapper">
+                    <div class="knob" style="background: conic-gradient(from 180deg, #ff006e 0deg, #ff006e 200deg, #333 200deg);"></div>
+                    <div class="knob-label">Weird</div>
+                </div>
+                <div class="knob-wrapper">
+                    <div class="knob" style="background: conic-gradient(from 180deg, #00f0ff 0deg, #00f0ff 288deg, #333 288deg);"></div>
+                    <div class="knob-label">Style%</div>
+                </div>
+            </div>
+            <div style="font-size: 0.75rem; color: #666; margin-top: 10px;">
+                > INHERITANCE: ACTIVE<br>
+                > MOOD: Bittersweet
+            </div>
+        </div>
+
+        <div style="position: relative; width: 100px;">
+            <svg width="100" height="400" style="position: absolute; left: -50px; top: 0;">
+                <path d="M 0 100 Q 50 100 50 150 T 100 200" stroke="#00f0ff" stroke-width="3" fill="none" opacity="0.8"/>
+                <path d="M 0 150 Q 50 150 50 200 T 100 250" stroke="#ff006e" stroke-width="3" fill="none" opacity="0.8"/>
+                <text x="30" y="180" fill="#00f0ff" font-size="10" font-family="monospace">CV_IN</text>
+            </svg>
+            <div style="position: absolute; top: 50%; left: 20px; font-size: 0.7rem; color: #666; transform: rotate(-90deg);">INHERITANCE_BUS</div>
+        </div>
+
+        <!-- Segmented Modules -->
+        <div class="module">
+            <div class="module-header">[Intro] Module</div>
+            <div style="font-size: 0.8rem; margin: 10px 0;">
+                <span class="section-tag">ambient</span>
+                <span class="section-tag">pads</span>
+            </div>
+            <div class="led-meter">
+                <div class="led"></div><div class="led"></div><div class="led active"></div><div class="led active"></div><div class="led"></div>
+            </div>
+            <div style="font-size: 0.7rem; color: #444; margin-top: 5px;">Energy: Low</div>
+        </div>
+
+        <div class="module">
+            <div class="module-header">[Verse] Module</div>
+            <div style="font-size: 0.8rem; margin: 10px 0;">
+                <span class="section-tag">stripped</span>
+                <span class="section-tag">whisper</span>
+            </div>
+            <div class="led-meter">
+                <div class="led"></div><div class="led active"></div><div class="led active"></div><div class="led"></div><div class="led"></div>
+            </div>
+        </div>
+
+        <div class="module" style="border: 1px solid #ff006e;">
+            <div class="module-header">[Chorus] Override</div>
+            <div style="font-size: 0.8rem; margin: 10px 0;">
+                <span class="section-tag" style="border-color: #ff006e;">anthemic</span>
+                <span class="section-tag" style="border-color: #ff006e;">full_band</span>
+                <span class="section-tag" style="border-color: #ff006e;">layered</span>
+            </div>
+            <div class="led-meter">
+                <div class="led hot"></div><div class="led hot"></div><div class="led hot"></div><div class="led hot"></div><div class="led hot"></div>
+            </div>
+            <div style="font-size: 0.7rem; color: #ff006e; margin-top: 5px;">Energy: MAXIMUM</div>
+            <div style="position: absolute; top: -10px; right: 10px; background: #ff006e; color: white; font-size: 0.6rem; padding: 2px 6px; border-radius: 3px;">OVERRIDE</div>
+        </div>
+
+        <div class="module">
+            <div class="module-header">[Outro] Filter</div>
+            <div class="knob-wrapper" style="margin-top: 20px;">
+                <div class="knob" style="background: conic-gradient(from 180deg, #444 0deg, #444 180deg, #333 180deg);"></div>
+                <div class="knob-label">Fade Out</div>
+            </div>
+        </div>
+    </div>
+
+    <div style="padding: 20px 40px; font-family: monospace; font-size: 0.8rem; color: #555;">
+        <div>> DUAL-PROMPT ARCHITECTURE: ACTIVE</div>
+        <div>> INHERITANCE_MECHANISM: WEIGHTED_PARAMETER_BLENDING</div>
+        <div>> SECTION_OVERRIDE_DETECTED: [CHORUS]</div>
+    </div>
+</body>
+</html>

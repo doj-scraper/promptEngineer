@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The GMIV Formula</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #000000;
+            color: #ffffff;
+            font-family: 'Inter', -apple-system, sans-serif;
+            min-height: 100vh;
+            padding: 60px 40px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-rows: auto 1fr;
+            gap: 40px;
+        }
+        .hero {
+            text-align: center;
+            border-bottom: 2px solid #333;
+            padding-bottom: 40px;
+        }
+        .formula {
+            font-size: 5rem;
+            font-weight: 800;
+            letter-spacing: -0.05em;
+            margin: 20px 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+        }
+        .formula span {
+            display: inline-block;
+            position: relative;
+        }
+        .g { color: #ffffff; }
+        .m { color: #0047ff; }
+        .i { color: #39ff14; }
+        .v { color: #ff073a; }
+
+        .plus {
+            font-size: 3rem;
+            color: #333;
+            font-weight: 300;
+        }
+        .subtitle {
+            font-size: 1.2rem;
+            color: #666;
+            font-weight: 300;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 2px;
+            background: #111;
+            border: 2px solid #111;
+        }
+        .card {
+            background: #000;
+            padding: 40px 30px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        .card:hover {
+            background: #0a0a0a;
+        }
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+        }
+        .card.g-border::before { background: #ffffff; box-shadow: 0 0 20px rgba(255,255,255,0.3); }
+        .card.m-border::before { background: #0047ff; box-shadow: 0 0 20px rgba(0,71,255,0.3); }
+        .card.i-border::before { background: #39ff14; box-shadow: 0 0 20px rgba(57,255,20,0.3); }
+        .card.v-border::before { background: #ff073a; box-shadow: 0 0 20px rgba(255,7,58,0.3); }
+
+        .card-letter {
+            font-size: 4rem;
+            font-weight: 800;
+            opacity: 0.2;
+            position: absolute;
+            top: 20px;
+            right: 20px;
+        }
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+        .card-content {
+            font-size: 0.9rem;
+            line-height: 1.6;
+            color: #aaa;
+            margin-bottom: 30px;
+        }
+        .spec-list {
+            list-style: none;
+            font-size: 0.8rem;
+        }
+        .spec-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid #222;
+            display: flex;
+            justify-content: space-between;
+        }
+        .spec-list li:last-child { border-bottom: none; }
+        .tag {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-family: monospace;
+            margin: 2px;
+        }
+        .tag-g { background: rgba(255,255,255,0.1); color: #fff; border: 1px solid rgba(255,255,255,0.3); }
+        .tag-m { background: rgba(0,71,255,0.1); color: #0047ff; border: 1px solid rgba(0,71,255,0.3); }
+        .tag-i { background: rgba(57,255,20,0.1); color: #39ff14; border: 1px solid rgba(57,255,20,0.3); }
+        .tag-v { background: rgba(255,7,58,0.1); color: #ff073a; border: 1px solid rgba(255,7,58,0.3); }
+
+        .formula-bar {
+            grid-column: 1 / -1;
+            background: #111;
+            padding: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 40px;
+            margin-top: 20px;
+            border: 1px solid #333;
+        }
+        .spec-density {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            font-size: 0.9rem;
+        }
+        .bar {
+            width: 300px;
+            height: 8px;
+            background: #222;
+            border-radius: 4px;
+            overflow: hidden;
+            position: relative;
+        }
+        .bar-fill {
+            height: 100%;
+            width: 66%;
+            background: linear-gradient(90deg, #333 0%, #fff 100%);
+            border-radius: 4px;
+        }
+        .optimal-range {
+            position: absolute;
+            left: 40%;
+            width: 20%;
+            height: 100%;
+            border-left: 2px solid #fff;
+            border-right: 2px solid #fff;
+            background: rgba(255,255,255,0.1);
+        }
+        .footer-note {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 20px;
+            font-size: 0.75rem;
+            color: #444;
+            font-family: monospace;
+        }
+        @media (max-width: 900px) {
+            body { padding: 24px 16px; }
+            .formula { font-size: 3rem; gap: 12px; flex-wrap: wrap; }
+            .grid { grid-template-columns: 1fr; }
+            .formula-bar { flex-direction: column; gap: 16px; }
+            .bar { width: 100%; max-width: 360px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="hero">
+            <div class="subtitle">The Four-Element Formula</div>
+            <div class="formula">
+                <span class="g">G</span>
+                <span class="plus">+</span>
+                <span class="m">M</span>
+                <span class="plus">+</span>
+                <span class="i">I</span>
+                <span class="plus">+</span>
+                <span class="v">V</span>
+            </div>
+            <div style="margin-top: 20px; font-size: 0.9rem; color: #666;">
+                Genre + Mood + Instrumentation + Vocals
+            </div>
+        </div>
+
+        <div class="grid">
+            <div class="card g-border">
+                <div class="card-letter g">G</div>
+                <div class="card-title">Genre</div>
+                <div class="card-content">
+                    Primary categorical anchor with subgenre granularity. Activates cluster triggers in model's latent space.
+                </div>
+                <ul class="spec-list">
+                    <li>Temporal anchors <span class="tag tag-g">90s</span></li>
+                    <li>Regional specificity <span class="tag tag-g">Berlin-school</span></li>
+                    <li>Fusion indicators <span class="tag tag-g">Fusion</span></li>
+                    <li>Cluster trigger <span style="color: #fff;">High impact</span></li>
+                </ul>
+            </div>
+
+            <div class="card m-border">
+                <div class="card-letter m">M</div>
+                <div class="card-title" style="color: #0047ff;">Mood</div>
+                <div class="card-content">
+                    Compound emotional descriptors activating richer associative networks than isolated terms.
+                </div>
+                <ul class="spec-list">
+                    <li>Compound terms <span class="tag tag-m">Bittersweet</span></li>
+                    <li>Contextual embedding <span class="tag tag-m">Nostalgic yet hopeful</span></li>
+                    <li>Dynamic interaction <span class="tag tag-m">Genre-specific</span></li>
+                    <li>Network depth <span style="color: #0047ff;">Deep</span></li>
+                </ul>
+            </div>
+
+            <div class="card i-border">
+                <div class="card-letter i">I</div>
+                <div class="card-title" style="color: #39ff14;">Instrumentation</div>
+                <div class="card-content">
+                    Three-layer description: Source identity + Performance method + Production treatment.
+                </div>
+                <ul class="spec-list">
+                    <li>Source <span class="tag tag-i">Piano</span></li>
+                    <li>Technique <span class="tag tag-i">Arpeggiated</span></li>
+                    <li>Treatment <span class="tag tag-i">Hall reverb</span></li>
+                    <li>Layering <span style="color: #39ff14;">3-parameter</span></li>
+                </ul>
+            </div>
+
+            <div class="card v-border">
+                <div class="card-letter v">V</div>
+                <div class="card-title" style="color: #ff073a;">Vocals</div>
+                <div class="card-content">
+                    Gender, register, timbre quality, emotional delivery, and spatial treatment specification.
+                </div>
+                <ul class="spec-list">
+                    <li>Register <span class="tag tag-v">Tenor</span></li>
+                    <li>Timbre <span class="tag tag-v">Breathy</span></li>
+                    <li>Delivery <span class="tag tag-v">Belted</span></li>
+                    <li>Processing <span class="tag tag-v">Auto-Tune: OFF</span></li>
+                </ul>
+            </div>
+
+            <div class="formula-bar">
+                <div class="spec-density">
+                    <span>Under-specified</span>
+                    <div class="bar">
+                        <div class="bar-fill"></div>
+                        <div class="optimal-range"></div>
+                    </div>
+                    <span>Over-specified</span>
+                </div>
+                <div style="border-left: 1px solid #333; padding-left: 40px;">
+                    <div style="font-size: 0.8rem; color: #666; margin-bottom: 5px;">OPTIMAL SPECIFICATION</div>
+                    <div style="font-size: 1.5rem; font-weight: 600;">40-60 words</div>
+                </div>
+            </div>
+
+            <div class="footer-note">
+                GMIV FORMULA // ORTHOGONAL COVERAGE // MINIMAL INTERFERENCE // MODULE: GLOBAL-PROMPT v1.0
+            </div>
+        </div>
+    </div>
+</body>
+</html>

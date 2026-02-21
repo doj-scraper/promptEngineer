@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dual-Prompt Blueprint</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #001524;
+            color: #ffffff;
+            font-family: 'Courier New', monospace;
+            background-image: 
+                linear-gradient(rgba(0,250,255,0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,250,255,0.1) 1px, transparent 1px);
+            background-size: 40px 40px;
+            min-height: 100vh;
+            padding: 40px;
+        }
+        .blueprint-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            border: 2px solid rgba(0,250,255,0.5);
+            padding: 60px;
+            position: relative;
+        }
+        .blueprint-container::before {
+            content: 'DUAL-PROMPT ARCHITECTURE - SHEET 1 OF 1';
+            position: absolute;
+            top: -12px;
+            left: 20px;
+            background: #001524;
+            padding: 0 10px;
+            color: rgba(0,250,255,0.8);
+            font-size: 0.8rem;
+            letter-spacing: 2px;
+        }
+        .title-block {
+            position: absolute;
+            bottom: 20px;
+            right: 40px;
+            border: 1px solid rgba(0,250,255,0.5);
+            padding: 15px;
+            font-size: 0.7rem;
+            color: rgba(0,250,255,0.8);
+            background: #001524;
+        }
+        .main-title {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 40px;
+            letter-spacing: 3px;
+            text-align: center;
+            text-transform: uppercase;
+            text-shadow: 0 0 20px rgba(0,250,255,0.5);
+        }
+        .split-view {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 100px;
+            position: relative;
+        }
+        .split-view::after {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 1px;
+            background: repeating-linear-gradient(
+                to bottom,
+                rgba(255,255,255,0.3) 0,
+                rgba(255,255,255,0.3) 5px,
+                transparent 5px,
+                transparent 10px
+            );
+        }
+        .section {
+            border: 1px solid rgba(255,255,255,0.3);
+            padding: 30px;
+            position: relative;
+        }
+        .section-label {
+            position: absolute;
+            top: -12px;
+            left: 20px;
+            background: #001524;
+            padding: 0 10px;
+            font-size: 0.8rem;
+            color: rgba(0,250,255,0.9);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        .dimension-line {
+            display: flex;
+            align-items: center;
+            margin: 20px 0;
+            font-size: 0.8rem;
+        }
+        .dimension-line::before,
+        .dimension-line::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: rgba(255,255,255,0.5);
+            position: relative;
+        }
+        .dimension-line::before { margin-right: 10px; }
+        .dimension-line::after { margin-left: 10px; }
+        .component-box {
+            border: 1px solid rgba(255,255,255,0.4);
+            padding: 15px;
+            margin: 15px 0;
+            position: relative;
+        }
+        .component-box::before {
+            content: attr(data-label);
+            position: absolute;
+            top: -10px;
+            left: 10px;
+            background: #001524;
+            padding: 0 5px;
+            font-size: 0.7rem;
+            color: rgba(255,255,255,0.7);
+        }
+        .crosshatch {
+            background: repeating-linear-gradient(
+                45deg,
+                transparent,
+                transparent 2px,
+                rgba(255,255,255,0.1) 2px,
+                rgba(255,255,255,0.1) 4px
+            );
+        }
+        .intersection-zone {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 200px;
+            height: 200px;
+            background: repeating-linear-gradient(
+                -45deg,
+                rgba(255,0,110,0.1),
+                rgba(255,0,110,0.1) 5px,
+                rgba(0,250,255,0.1) 5px,
+                rgba(0,250,255,0.1) 10px
+            );
+            border: 2px dashed rgba(255,255,255,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            text-align: center;
+            z-index: 10;
+        }
+        .detail-table {
+            width: 100%;
+            font-size: 0.75rem;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        .detail-table td {
+            padding: 8px;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+        }
+        .detail-table td:first-child {
+            color: rgba(0,250,255,0.8);
+            width: 40%;
+        }
+        .circle-ref {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 20px;
+            height: 20px;
+            border: 1px solid rgba(255,255,255,0.5);
+            border-radius: 50%;
+            font-size: 0.7rem;
+            margin-right: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="blueprint-container">
+        <div class="main-title">Dual-Prompt Architecture: Style vs. Lyrics</div>
+
+        <div class="split-view">
+            <!-- Left: STYLE -->
+            <div class="section crosshatch">
+                <div class="section-label">Style Prompt Domain</div>
+
+                <div class="dimension-line">SOUND-FIRST LANGUAGE</div>
+
+                <div class="component-box" data-label="TIMBRE">
+                    Source + Technique + Treatment<br>
+                    <span style="color: rgba(0,250,255,0.7);">"Jangly electric guitar with light overdrive"</span>
+                </div>
+
+                <div class="component-box" data-label="TEXTURE">
+                    Density + Stratification + Interaction<br>
+                    <span style="color: rgba(0,250,255,0.7);">"Dense mid-range saturation"</span>
+                </div>
+
+                <div class="component-box" data-label="SPACE">
+                    Distance + Positioning + Environment<br>
+                    <span style="color: rgba(0,250,255,0.7);">"Intimate close-miked in dry acoustic"</span>
+                </div>
+
+                <table class="detail-table">
+                    <tr>
+                        <td><span class="circle-ref">1</span>Genre</td>
+                        <td>Cluster triggers in latent space</td>
+                    </tr>
+                    <tr>
+                        <td><span class="circle-ref">2</span>Instrumentation</td>
+                        <td>3-layer descriptors</td>
+                    </tr>
+                    <tr>
+                        <td><span class="circle-ref">3</span>Production</td>
+                        <td>Compression + Saturation + Width</td>
+                    </tr>
+                </table>
+            </div>
+
+            <!-- Center Intersection -->
+            <div class="intersection-zone">
+                <div>
+                    <div style="font-size: 0.9rem; margin-bottom: 5px;">INTERSECTION</div>
+                    <div>Vocal Delivery Tags</div>
+                    <div style="font-size: 0.6rem; opacity: 0.7;">[whispered] [belted] [intimate]</div>
+                </div>
+            </div>
+
+            <!-- Right: LYRICS -->
+            <div class="section">
+                <div class="section-label">Lyrics Prompt Domain</div>
+
+                <div class="dimension-line">STRUCTURAL & NARRATIVE</div>
+
+                <div class="component-box" data-label="NARRATIVE ARC">
+                    Exposition → Development → Climax → Resolution<br>
+                    <span style="color: rgba(255,0,110,0.7);">Emotional Progression Mapping</span>
+                </div>
+
+                <div class="component-box" data-label="STRUCTURAL MARKERS">
+                    [Verse] → [Pre-Chorus] → [Chorus] → [Bridge]<br>
+                    <span style="color: rgba(255,0,110,0.7);">Function-specific section labels</span>
+                </div>
+
+                <div class="component-box" data-label="CONSTRAINTS">
+                    Syllabic Count + Stress Pattern + Line Breaking<br>
+                    <span style="color: rgba(255,0,110,0.7);">8-12 syllables optimal</span>
+                </div>
+
+                <table class="detail-table">
+                    <tr>
+                        <td><span class="circle-ref">A</span>Section Duration</td>
+                        <td>8-16 bars standard</td>
+                    </tr>
+                    <tr>
+                        <td><span class="circle-ref">B</span>Vocal Delivery</td>
+                        <td>Overrides global settings</td>
+                    </tr>
+                    <tr>
+                        <td><span class="circle-ref">C</span>Instrumental Breaks</td>
+                        <td>[guitar solo] tags</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- Conflict Resolution Box -->
+        <div style="margin-top: 60px; border: 1px solid rgba(255,200,0,0.5); padding: 20px; position: relative;">
+            <div class="section-label" style="color: rgba(255,200,0,0.9);">Conflict Resolution Protocol</div>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; font-size: 0.8rem; margin-top: 10px;">
+                <div>
+                    <strong style="color: rgba(255,200,0,0.8);">STYLE DOMINANT</strong><br>
+                    Timbre overrides content<br>
+                    Genre-emotion alignment
+                </div>
+                <div>
+                    <strong style="color: rgba(255,200,0,0.8);">SPECIFICITY PRIORITY</strong><br>
+                    Local tags > Global settings<br>
+                    Later prompt > Earlier
+                </div>
+                <div>
+                    <strong style="color: rgba(255,200,0,0.8);">LYRICS DOMINANT</strong><br>
+                    Structural markers persist<br>
+                    Narrative arc preserved
+                </div>
+            </div>
+        </div>
+
+        <div class="title-block">
+            SCALE: 1:1<br>
+            REV: 2024<br>
+            DWG NO: AI-MUSIC-001
+        </div>
+    </div>
+</body>
+</html>

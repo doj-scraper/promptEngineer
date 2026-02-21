@@ -1,0 +1,1234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Meta Tag Encyclopedia — Expandable Data Grid</title>
+<style>
+  :root{
+    --bg:#0a0a0f;
+    --grid:#1a1a1a;
+    --text:#e8e8f0;
+    --muted:#9aa0b2;
+    --dim:0.18;
+
+    --cyan:#00f0ff;
+    --magenta:#ff2bd6;
+    --lime:#39ff14;
+    --amber:#ffb000;
+
+    --cell:#0e0f16;
+    --cell2:#0b0c12;
+
+    --shadow: 0 10px 30px rgba(0,0,0,.55);
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    min-height:100vh;
+    background:
+      linear-gradient(rgba(26,26,26,.55) 0.5px, transparent 0.5px),
+      linear-gradient(90deg, rgba(26,26,26,.55) 0.5px, transparent 0.5px),
+      radial-gradient(1200px 900px at 70% 10%, rgba(0,240,255,.08), transparent 60%),
+      radial-gradient(900px 700px at 20% 80%, rgba(255,43,214,.07), transparent 55%),
+      var(--bg);
+    background-size: 18px 18px, 18px 18px, auto, auto, auto;
+    color:var(--text);
+    font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    padding: 28px 18px 34px;
+  }
+
+  .wrap{
+    max-width: 1500px;
+    margin: 0 auto;
+    display:grid;
+    grid-template-columns: 310px 1fr;
+    gap: 18px;
+    align-items:start;
+  }
+
+  header{
+    grid-column: 1 / -1;
+    display:flex;
+    align-items:flex-end;
+    justify-content:space-between;
+    gap:16px;
+    padding: 10px 8px 18px;
+    border-bottom: 1px solid rgba(255,255,255,.08);
+  }
+  .title{
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+  }
+  h1{
+    font-size: 1.6rem;
+    letter-spacing: .06em;
+    font-weight: 700;
+  }
+  .sub{
+    color: var(--muted);
+    font-size:.92rem;
+    line-height:1.3;
+  }
+  .meta{
+    color:rgba(255,255,255,.55);
+    font-size:.8rem;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+    text-align:right;
+    line-height:1.45;
+  }
+
+  /* Sidebar */
+  .side{
+    position:sticky;
+    top: 14px;
+    border: 1px solid rgba(255,255,255,.1);
+    background: linear-gradient(180deg, rgba(14,15,22,.8), rgba(10,10,15,.85));
+    border-radius: 14px;
+    box-shadow: var(--shadow);
+    padding: 16px;
+    overflow:hidden;
+  }
+  .side h2{
+    font-size:.9rem;
+    text-transform:uppercase;
+    letter-spacing:.2em;
+    font-weight: 700;
+    color: rgba(255,255,255,.75);
+    margin-bottom: 12px;
+  }
+
+  .filters{
+    display:grid;
+    gap:10px;
+    margin-bottom: 14px;
+    padding-bottom: 14px;
+    border-bottom: 1px dashed rgba(255,255,255,.12);
+  }
+  .chk{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    padding: 10px 10px;
+    border-radius: 12px;
+    background: rgba(0,0,0,.18);
+    border: 1px solid rgba(255,255,255,.08);
+  }
+  .chk label{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    font-size:.88rem;
+    color: rgba(255,255,255,.82);
+    cursor:pointer;
+    user-select:none;
+  }
+  .chk input{
+    width: 16px; height: 16px;
+    accent-color: var(--cyan);
+    cursor:pointer;
+  }
+  .pill{
+    font-size:.72rem;
+    padding: 3px 8px;
+    border-radius: 999px;
+    border: 1px solid rgba(255,255,255,.14);
+    color: rgba(255,255,255,.78);
+    font-family: ui-monospace, Menlo, Consolas, monospace;
+    background: rgba(255,255,255,.04);
+    white-space:nowrap;
+  }
+  .pill.cyan{border-color: rgba(0,240,255,.35); box-shadow: 0 0 14px rgba(0,240,255,.12) inset;}
+  .pill.magenta{border-color: rgba(255,43,214,.35); box-shadow: 0 0 14px rgba(255,43,214,.12) inset;}
+  .pill.lime{border-color: rgba(57,255,20,.35); box-shadow: 0 0 14px rgba(57,255,20,.12) inset;}
+  .pill.amber{border-color: rgba(255,176,0,.35); box-shadow: 0 0 14px rgba(255,176,0,.12) inset;}
+
+  .search{
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+    margin-top: 12px;
+  }
+  .search label{
+    font-size:.82rem;
+    color: rgba(255,255,255,.68);
+  }
+  .search input{
+    width:100%;
+    padding: 12px 12px;
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,.12);
+    background: rgba(0,0,0,.25);
+    color: var(--text);
+    outline:none;
+    font-family: ui-monospace, Menlo, Consolas, monospace;
+    font-size:.9rem;
+  }
+  .search input:focus{
+    border-color: rgba(0,240,255,.35);
+    box-shadow: 0 0 0 3px rgba(0,240,255,.10);
+  }
+  .hint{
+    margin-top: 10px;
+    font-size:.76rem;
+    color: rgba(255,255,255,.55);
+    line-height:1.35;
+  }
+  .hint code{
+    font-family: ui-monospace, Menlo, Consolas, monospace;
+    color: rgba(0,240,255,.9);
+  }
+
+  /* Grid */
+  .grid{
+    border: 1px solid rgba(255,255,255,.08);
+    background: rgba(0,0,0,.10);
+    border-radius: 16px;
+    padding: 14px;
+    box-shadow: var(--shadow);
+  }
+
+  .legend{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    align-items:center;
+    justify-content:space-between;
+    padding: 8px 8px 14px;
+    border-bottom: 1px solid rgba(255,255,255,.08);
+    margin-bottom: 14px;
+  }
+  .legend-left{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    align-items:center;
+  }
+  .legend-right{
+    display:flex;
+    gap:10px;
+    align-items:center;
+    color: rgba(255,255,255,.58);
+    font-size:.78rem;
+    font-family: ui-monospace, Menlo, Consolas, monospace;
+  }
+  .kbd{
+    border: 1px solid rgba(255,255,255,.14);
+    background: rgba(255,255,255,.05);
+    border-radius: 8px;
+    padding: 2px 7px;
+    font-size:.72rem;
+    color: rgba(255,255,255,.75);
+  }
+
+  .cells{
+    display:grid;
+    grid-template-columns: repeat(12, minmax(74px, 1fr));
+    gap: 10px;
+    padding: 10px 6px 6px;
+  }
+
+  /* Responsive */
+  @media (max-width: 1100px){
+    .wrap{grid-template-columns: 1fr;}
+    .side{position:relative; top:auto;}
+    .cells{grid-template-columns: repeat(6, minmax(90px, 1fr));}
+    header{align-items:flex-start; flex-direction:column;}
+    .meta{text-align:left;}
+  }
+  @media (max-width: 640px){
+    body{padding: 18px 12px 24px;}
+    .cells{grid-template-columns: repeat(3, minmax(92px, 1fr)); gap: 8px;}
+  }
+
+  /* Cells */
+  .cell{
+    position:relative;
+    background: linear-gradient(180deg, rgba(14,15,22,.92), rgba(10,10,15,.96));
+    border: 1px solid rgba(255,255,255,.10);
+    border-radius: 14px;
+    padding: 10px 10px 10px;
+    min-height: 108px;
+    overflow:hidden;
+    transform: translateZ(0);
+    transition: transform .18s ease, border-color .18s ease, filter .18s ease, opacity .18s ease;
+    box-shadow:
+      0 0 0 1px rgba(255,255,255,.03) inset,
+      0 14px 30px rgba(0,0,0,.55);
+    cursor: default;
+  }
+
+  .cell::before{
+    content:'';
+    position:absolute;
+    top:0; left:0; right:0;
+    height: 4px;
+    background: var(--cyan);
+    box-shadow: 0 0 16px color-mix(in srgb, var(--cyan) 55%, transparent);
+    opacity: .9;
+  }
+
+  .cell[data-cat="section"]::before{ background: var(--cyan); }
+  .cell[data-cat="vocal"]::before{ background: var(--magenta); }
+  .cell[data-cat="instr"]::before{ background: var(--lime); }
+  .cell[data-cat="prod"]::before{ background: var(--amber); }
+
+  /* Power glow (1-5) */
+  .cell{ --glow: rgba(255,255,255,.08); }
+  .cell[data-power="1"]{ --glow: rgba(255,255,255,.05); }
+  .cell[data-power="2"]{ --glow: rgba(0,240,255,.08); }
+  .cell[data-power="3"]{ --glow: rgba(0,240,255,.14); }
+  .cell[data-power="4"]{ --glow: rgba(0,240,255,.22); }
+  .cell[data-power="5"]{ --glow: rgba(0,240,255,.32); }
+
+  .cell[data-cat="vocal"][data-power="2"]{ --glow: rgba(255,43,214,.10); }
+  .cell[data-cat="vocal"][data-power="3"]{ --glow: rgba(255,43,214,.16); }
+  .cell[data-cat="vocal"][data-power="4"]{ --glow: rgba(255,43,214,.25); }
+  .cell[data-cat="vocal"][data-power="5"]{ --glow: rgba(255,43,214,.36); }
+
+  .cell[data-cat="instr"][data-power="2"]{ --glow: rgba(57,255,20,.10); }
+  .cell[data-cat="instr"][data-power="3"]{ --glow: rgba(57,255,20,.18); }
+  .cell[data-cat="instr"][data-power="4"]{ --glow: rgba(57,255,20,.27); }
+  .cell[data-cat="instr"][data-power="5"]{ --glow: rgba(57,255,20,.38); }
+
+  .cell[data-cat="prod"][data-power="2"]{ --glow: rgba(255,176,0,.10); }
+  .cell[data-cat="prod"][data-power="3"]{ --glow: rgba(255,176,0,.18); }
+  .cell[data-cat="prod"][data-power="4"]{ --glow: rgba(255,176,0,.27); }
+  .cell[data-cat="prod"][data-power="5"]{ --glow: rgba(255,176,0,.38); }
+
+  .cell:hover{
+    transform: translateY(-4px) scale(1.04);
+    z-index: 20;
+    border-color: rgba(255,255,255,.22);
+    box-shadow:
+      0 0 0 1px rgba(255,255,255,.05) inset,
+      0 0 0 2px rgba(255,255,255,.04),
+      0 0 28px var(--glow),
+      0 18px 46px rgba(0,0,0,.72);
+  }
+
+  .cell .atomic{
+    font-size: .66rem;
+    color: rgba(255,255,255,.55);
+    letter-spacing: .04em;
+    font-family: ui-monospace, Menlo, Consolas, monospace;
+    margin-bottom: 6px;
+  }
+  .cell .tag{
+    font-family: ui-monospace, Menlo, Consolas, monospace;
+    font-size: .98rem;
+    letter-spacing: .02em;
+    margin-bottom: 6px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  .cell[data-cat="section"] .tag{ color: color-mix(in srgb, var(--cyan) 85%, white 15%); }
+  .cell[data-cat="vocal"] .tag{ color: color-mix(in srgb, var(--magenta) 82%, white 18%); }
+  .cell[data-cat="instr"] .tag{ color: color-mix(in srgb, var(--lime) 82%, white 18%); }
+  .cell[data-cat="prod"]  .tag{ color: color-mix(in srgb, var(--amber) 82%, white 18%); }
+
+  .cell .def{
+    font-size: .82rem;
+    color: rgba(255,255,255,.70);
+    line-height: 1.25;
+    margin-bottom: 8px;
+    font-family: "Inter Tight", ui-sans-serif, system-ui, sans-serif;
+  }
+  .cell .micro{
+    font-size: .62rem;
+    color: rgba(255,255,255,.52);
+    line-height: 1.3;
+  }
+  .stars{
+    font-size: .78rem;
+    letter-spacing: .12em;
+    margin-top: 7px;
+    color: rgba(255,255,255,.65);
+    font-family: ui-monospace, Menlo, Consolas, monospace;
+  }
+
+  /* Expand panel */
+  .more{
+    position:absolute;
+    left: 10px;
+    right: 10px;
+    bottom: 10px;
+    border-top: 1px dashed rgba(255,255,255,.14);
+    padding-top: 8px;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity .18s ease, transform .18s ease;
+    pointer-events:none;
+  }
+  .cell:hover .more{
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .more .line{
+    font-family: ui-monospace, Menlo, Consolas, monospace;
+    font-size: .72rem;
+    color: rgba(255,255,255,.68);
+    line-height: 1.35;
+  }
+  .more .line code{
+    color: rgba(0,240,255,.95);
+  }
+  .more .line .k{ color: rgba(255,43,214,.92); }
+  .more .line .v{ color: rgba(57,255,20,.92); }
+  .more .line .a{ color: rgba(255,176,0,.92); }
+
+  /* Tooltip */
+  .tip{
+    position:absolute;
+    top: 10px;
+    right: 10px;
+    width: 22px; height: 22px;
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,.14);
+    background: rgba(255,255,255,.04);
+    color: rgba(255,255,255,.70);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-family: ui-monospace, Menlo, Consolas, monospace;
+    font-size: .72rem;
+  }
+  .tip:hover + .tooltip{opacity:1; transform: translateY(0);}
+  .tooltip{
+    position:absolute;
+    top: 40px;
+    right: 10px;
+    width: min(280px, calc(100% - 20px));
+    background: rgba(0,0,0,.78);
+    border: 1px solid rgba(255,255,255,.16);
+    border-radius: 12px;
+    padding: 10px 10px;
+    color: rgba(255,255,255,.82);
+    font-size: .72rem;
+    line-height: 1.35;
+    font-family: ui-monospace, Menlo, Consolas, monospace;
+    opacity:0;
+    transform: translateY(6px);
+    transition: opacity .16s ease, transform .16s ease;
+    pointer-events:none;
+    backdrop-filter: blur(8px);
+  }
+  .tooltip strong{color: rgba(255,255,255,.92);}
+  .tooltip .cat{opacity:.85}
+  .tooltip .ex{margin-top:6px; opacity:.92}
+  .tooltip .ex code{color: rgba(0,240,255,.95)}
+  .tooltip .warn{margin-top:6px; color: rgba(255,176,0,.95)}
+
+  /* Spotlight dim (search + filters) */
+  .cell.dimmed{
+    opacity: var(--dim);
+    filter: grayscale(.25) saturate(.7);
+    transform: none;
+  }
+  .cell.hidden{ display:none; }
+
+  /* Footer */
+  .foot{
+    grid-column: 1 / -1;
+    margin-top: 10px;
+    padding: 14px 10px 2px;
+    color: rgba(255,255,255,.50);
+    font-size: .78rem;
+    font-family: ui-monospace, Menlo, Consolas, monospace;
+    display:flex;
+    flex-wrap:wrap;
+    gap:12px;
+    justify-content:space-between;
+  }
+  .foot span b{ color: rgba(255,255,255,.78); font-weight:700; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="title">
+        <h1>Meta Tag Encyclopedia</h1>
+        <div class="sub">A specimen-catalog grid for section labels, vocal control, instrumentation, and production tags. Hover to expand. Search to spotlight. Filter to isolate.</div>
+      </div>
+      <div class="meta">
+        INDEX: §3.x.x<br/>
+        GRID: 12×N • 40+ tags<br/>
+        MODE: Reference / High Density
+      </div>
+    </header>
+
+    <aside class="side">
+      <h2>Legend & Filters</h2>
+
+      <div class="filters">
+        <div class="chk">
+          <label><input type="checkbox" id="f_section" checked /> Section Labels</label>
+          <span class="pill cyan">Cyan</span>
+        </div>
+        <div class="chk">
+          <label><input type="checkbox" id="f_vocal" checked /> Vocal Control</label>
+          <span class="pill magenta">Magenta</span>
+        </div>
+        <div class="chk">
+          <label><input type="checkbox" id="f_instr" checked /> Instrumentation</label>
+          <span class="pill lime">Lime</span>
+        </div>
+        <div class="chk">
+          <label><input type="checkbox" id="f_prod" checked /> Production</label>
+          <span class="pill amber">Amber</span>
+        </div>
+      </div>
+
+      <div class="search">
+        <label for="q">Search tags (syntax, meaning, or example)</label>
+        <input id="q" placeholder="e.g. chorus, whispered, 8-16 bars, reverb..." autocomplete="off" />
+      </div>
+
+      <div class="hint">
+        Tip: type <code>[chorus]</code>, <code>ad-lib</code>, <code>808</code>, <code>sidechain</code>, or a section id like <code>§3.2.4</code>.<br/>
+        Hover any tile to reveal syntax variations, inheritance behavior, and reliability.
+      </div>
+    </aside>
+
+    <main class="grid">
+      <div class="legend">
+        <div class="legend-left">
+          <span class="pill cyan">Section</span>
+          <span class="pill magenta">Vocal</span>
+          <span class="pill lime">Instr</span>
+          <span class="pill amber">Prod</span>
+        </div>
+        <div class="legend-right">
+          Hover = expand <span class="kbd">⟂</span> Search = spotlight <span class="kbd">/</span> Clear = <span class="kbd">Esc</span>
+        </div>
+      </div>
+
+      <section class="cells" id="cells">
+        <!-- SECTION LABELS (cyan) -->
+        <div class="cell" data-cat="section" data-power="5" data-keywords="intro opening ambience pads">
+          <div class="tip">i</div><div class="tooltip"><strong>[Intro]</strong> <span class="cat">(Section)</span><div class="ex">Example: <code>[Intro]</code> <code>(8 bars)</code> <code>(ambient pads)</code></div><div class="warn">Inheritance: global style applies unless overridden.</div></div>
+          <div class="atomic">§3.1.1</div>
+          <div class="tag">[Intro]</div>
+          <div class="def">Establishes palette and tempo cues.</div>
+          <div class="micro">Use for texture-first openings, low density.</div>
+          <div class="stars">★★★★★</div>
+          <div class="more">
+            <div class="line">Syntax: <code>[Intro]</code> <span class="k">duration</span>=<span class="v">4–16 bars</span></div>
+            <div class="line">Inheritance: <span class="a">high</span> (global)</div>
+          </div>
+        </div>
+
+        <div class="cell" data-cat="section" data-power="5" data-keywords="verse storytelling low energy">
+          <div class="tip">i</div><div class="tooltip"><strong>[Verse]</strong> <span class="cat">(Section)</span><div class="ex">Example: <code>[Verse]</code> <code>(stripped)</code> <code>(8–16 bars)</code></div></div>
+          <div class="atomic">§3.1.2</div>
+          <div class="tag">[Verse]</div>
+          <div class="def">Narrative setup, controlled density.</div>
+          <div class="micro">Best for contrast vs chorus.</div>
+          <div class="stars">★★★★★</div>
+          <div class="more"><div class="line">Variant: <code>[Verse 1]</code> / <code>[Verse 2]</code></div><div class="line">Reliability: <span class="v">very high</span></div></div>
+        </div>
+
+        <div class="cell" data-cat="section" data-power="5" data-keywords="pre-chorus lift build tension">
+          <div class="tip">i</div><div class="tooltip"><strong>[Pre-Chorus]</strong> <span class="cat">(Section)</span><div class="ex">Example: <code>[Pre-Chorus]</code> <code>(build)</code></div></div>
+          <div class="atomic">§3.1.3</div>
+          <div class="tag">[Pre-Chorus]</div>
+          <div class="def">Build + lift into hook.</div>
+          <div class="micro">Increase motion: drums, risers.</div>
+          <div class="stars">★★★★★</div>
+          <div class="more"><div class="line">Tip: add <span class="k">energy</span>=<span class="v">+1</span></div><div class="line">Inheritance: <span class="a">medium</span></div></div>
+        </div>
+
+        <div class="cell" data-cat="section" data-power="5" data-keywords="chorus hook big anthemic">
+          <div class="tip">i</div><div class="tooltip"><strong>[Chorus]</strong> <span class="cat">(Section)</span><div class="ex">Example: <code>[Chorus]</code> <code>(anthemic)</code> <code>(full band)</code></div></div>
+          <div class="atomic">§3.1.4</div>
+          <div class="tag">[Chorus]</div>
+          <div class="def">Main hook section, max clarity.</div>
+          <div class="micro">Override zone: widen, add layers.</div>
+          <div class="stars">★★★★★</div>
+          <div class="more"><div class="line">Override: <span class="k">density</span>=<span class="v">high</span>, <span class="k">width</span>=<span class="v">wide</span></div><div class="line">Reliability: <span class="v">very high</span></div></div>
+        </div>
+
+        <div class="cell" data-cat="section" data-power="4" data-keywords="bridge contrast breakdown">
+          <div class="tip">i</div><div class="tooltip"><strong>[Bridge]</strong> <span class="cat">(Section)</span><div class="ex">Example: <code>[Bridge]</code> <code>(half-time)</code> <code>(new chords)</code></div></div>
+          <div class="atomic">§3.1.5</div>
+          <div class="tag">[Bridge]</div>
+          <div class="def">Contrast + reset before final chorus.</div>
+          <div class="micro">Change harmony or rhythm.</div>
+          <div class="stars">★★★★☆</div>
+          <div class="more"><div class="line">Variant: <code>[Bridge]</code> + <code>[Drop]</code></div><div class="line">Inheritance: <span class="a">low</span> (often custom)</div></div>
+        </div>
+
+        <div class="cell" data-cat="section" data-power="4" data-keywords="outro ending fade resolve">
+          <div class="tip">i</div><div class="tooltip"><strong>[Outro]</strong> <span class="cat">(Section)</span><div class="ex">Example: <code>[Outro]</code> <code>(fade out)</code> <code>(lo-fi)</code></div></div>
+          <div class="atomic">§3.1.6</div>
+          <div class="tag">[Outro]</div>
+          <div class="def">Resolution, de-escalation, exit.</div>
+          <div class="micro">Filter down, reduce drums.</div>
+          <div class="stars">★★★★☆</div>
+          <div class="more"><div class="line">Tip: <span class="k">fade</span>=<span class="v">true</span> or <span class="k">cut</span>=<span class="v">hard</span></div></div>
+        </div>
+
+        <div class="cell" data-cat="section" data-power="3" data-keywords="drop chorus impact edm">
+          <div class="tip">i</div><div class="tooltip"><strong>[Drop]</strong> <span class="cat">(Section)</span><div class="ex">Example: <code>[Drop]</code> <code>(impact)</code> <code>(no vocals)</code></div></div>
+          <div class="atomic">§3.1.7</div>
+          <div class="tag">[Drop]</div>
+          <div class="def">Instrumental impact moment.</div>
+          <div class="micro">Strip vocals, emphasize drums/bass.</div>
+          <div class="stars">★★★☆☆</div>
+          <div class="more"><div class="line">Works best when explicitly <span class="k">instrumental</span>=<span class="v">true</span></div></div>
+        </div>
+
+        <div class="cell" data-cat="section" data-power="3" data-keywords="breakdown quiet reset">
+          <div class="tip">i</div><div class="tooltip"><strong>[Breakdown]</strong> <span class="cat">(Section)</span><div class="ex">Example: <code>[Breakdown]</code> <code>(drums only)</code></div></div>
+          <div class="atomic">§3.1.8</div>
+          <div class="tag">[Breakdown]</div>
+          <div class="def">Density reduction for tension.</div>
+          <div class="micro">Great before drop or final chorus.</div>
+          <div class="stars">★★★☆☆</div>
+          <div class="more"><div class="line">Pair with <span class="k">filter</span>=<span class="v">lowpass</span></div></div>
+        </div>
+
+        <div class="cell" data-cat="section" data-power="3" data-keywords="instrumental solo interlude">
+          <div class="tip">i</div><div class="tooltip"><strong>[Instrumental]</strong> <span class="cat">(Section)</span><div class="ex">Example: <code>[Instrumental]</code> <code>(guitar solo)</code></div></div>
+          <div class="atomic">§3.1.9</div>
+          <div class="tag">[Instrumental]</div>
+          <div class="def">No lead vocal; feature arrangement.</div>
+          <div class="micro">Useful for solos or motif development.</div>
+          <div class="stars">★★★☆☆</div>
+          <div class="more"><div class="line">Common: <code>[guitar solo]</code>, <code>[synth lead]</code></div></div>
+        </div>
+
+        <div class="cell" data-cat="section" data-power="2" data-keywords="tag adlib section marker">
+          <div class="tip">i</div><div class="tooltip"><strong>[Tag]</strong> <span class="cat">(Section)</span><div class="ex">Example: <code>[Tag]</code> <code>(repeat hook)</code></div></div>
+          <div class="atomic">§3.1.10</div>
+          <div class="tag">[Tag]</div>
+          <div class="def">Short hook repeat at end.</div>
+          <div class="micro">Optional; depends on genre.</div>
+          <div class="stars">★★☆☆☆</div>
+          <div class="more"><div class="line">Duration: <span class="v">2–8 bars</span></div></div>
+        </div>
+
+        <div class="cell" data-cat="section" data-power="2" data-keywords="refrain alternate chorus">
+          <div class="tip">i</div><div class="tooltip"><strong>[Refrain]</strong> <span class="cat">(Section)</span><div class="ex">Example: <code>[Refrain]</code> <code>(short hook)</code></div></div>
+          <div class="atomic">§3.1.11</div>
+          <div class="tag">[Refrain]</div>
+          <div class="def">Recurring hook variant.</div>
+          <div class="micro">Use when chorus is too heavy.</div>
+          <div class="stars">★★☆☆☆</div>
+          <div class="more"><div class="line">Tip: keep melody stable, lyric variable.</div></div>
+        </div>
+
+        <div class="cell" data-cat="section" data-power="2" data-keywords="hook part chorus highlight">
+          <div class="tip">i</div><div class="tooltip"><strong>[Hook]</strong> <span class="cat">(Section)</span><div class="ex">Example: <code>[Hook]</code> <code>(repeat line)</code></div></div>
+          <div class="atomic">§3.1.12</div>
+          <div class="tag">[Hook]</div>
+          <div class="def">Explicit “hook here” marker.</div>
+          <div class="micro">Helpful when model drifts.</div>
+          <div class="stars">★★☆☆☆</div>
+          <div class="more"><div class="line">Often redundant with <code>[Chorus]</code>.</div></div>
+        </div>
+
+        <!-- VOCAL CONTROL (magenta) -->
+        <div class="cell" data-cat="vocal" data-power="5" data-keywords="whispered intimate close mic">
+          <div class="tip">i</div><div class="tooltip"><strong>[whispered]</strong> <span class="cat">(Vocal)</span><div class="ex">Example: <code>[Verse]</code> <code>[whispered]</code></div><div class="warn">Use with “dry” or “close-miked” for best effect.</div></div>
+          <div class="atomic">§3.2.1</div>
+          <div class="tag">[whispered]</div>
+          <div class="def">Low-energy breathy delivery.</div>
+          <div class="micro">Pairs well with minimal backing.</div>
+          <div class="stars">★★★★★</div>
+          <div class="more"><div class="line">Alt: <code>[hushed]</code> / <code>[soft]</code></div><div class="line">Inheritance: <span class="a">local</span> (section)</div></div>
+        </div>
+
+        <div class="cell" data-cat="vocal" data-power="5" data-keywords="belted powerful loud">
+          <div class="tip">i</div><div class="tooltip"><strong>[belted]</strong> <span class="cat">(Vocal)</span><div class="ex">Example: <code>[Chorus]</code> <code>[belted]</code></div></div>
+          <div class="atomic">§3.2.2</div>
+          <div class="tag">[belted]</div>
+          <div class="def">High intensity, strong chest voice.</div>
+          <div class="micro">Works best in chorus or climax.</div>
+          <div class="stars">★★★★★</div>
+          <div class="more"><div class="line">Tip: add <span class="k">support</span>=<span class="v">double</span> / <span class="v">harmonies</span></div></div>
+        </div>
+
+        <div class="cell" data-cat="vocal" data-power="4" data-keywords="intimate close-miked dry">
+          <div class="tip">i</div><div class="tooltip"><strong>[intimate]</strong> <span class="cat">(Vocal)</span><div class="ex">Example: <code>[intimate]</code> + <code>(dry room)</code></div></div>
+          <div class="atomic">§3.2.3</div>
+          <div class="tag">[intimate]</div>
+          <div class="def">Close-mic presence and proximity.</div>
+          <div class="micro">Reduces perceived distance.</div>
+          <div class="stars">★★★★☆</div>
+          <div class="more"><div class="line">Alt: <code>[close-miked]</code></div></div>
+        </div>
+
+        <div class="cell" data-cat="vocal" data-power="4" data-keywords="falsetto airy high register">
+          <div class="tip">i</div><div class="tooltip"><strong>[falsetto]</strong> <span class="cat">(Vocal)</span><div class="ex">Example: <code>[Pre-Chorus]</code> <code>[falsetto]</code></div></div>
+          <div class="atomic">§3.2.4</div>
+          <div class="tag">[falsetto]</div>
+          <div class="def">Light high register for lift.</div>
+          <div class="micro">Good for contrast and fragility.</div>
+          <div class="stars">★★★★☆</div>
+          <div class="more"><div class="line">Works with <span class="k">reverb</span>=<span class="v">plate</span></div></div>
+        </div>
+
+        <div class="cell" data-cat="vocal" data-power="4" data-keywords="raspy gritty distorted">
+          <div class="tip">i</div><div class="tooltip"><strong>[raspy]</strong> <span class="cat">(Vocal)</span><div class="ex">Example: <code>[raspy]</code> + <code>(light saturation)</code></div></div>
+          <div class="atomic">§3.2.5</div>
+          <div class="tag">[raspy]</div>
+          <div class="def">Grit/edge texture on vocal.</div>
+          <div class="micro">Adds urgency, pain, attitude.</div>
+          <div class="stars">★★★★☆</div>
+          <div class="more"><div class="line">Avoid overspec: let style handle grit.</div></div>
+        </div>
+
+        <div class="cell" data-cat="vocal" data-power="3" data-keywords="robotic autotune tuned">
+          <div class="tip">i</div><div class="tooltip"><strong>[auto-tuned]</strong> <span class="cat">(Vocal)</span><div class="ex">Example: <code>[auto-tuned]</code> <code>(modern pop)</code></div></div>
+          <div class="atomic">§3.2.6</div>
+          <div class="tag">[auto-tuned]</div>
+          <div class="def">Pitch-corrected, synthetic gloss.</div>
+          <div class="micro">Specify amount if needed.</div>
+          <div class="stars">★★★☆☆</div>
+          <div class="more"><div class="line"><span class="k">amount</span>=<span class="v">subtle</span>/<span class="v">hard</span></div></div>
+        </div>
+
+        <div class="cell" data-cat="vocal" data-power="3" data-keywords="double tracked">
+          <div class="tip">i</div><div class="tooltip"><strong>[double-tracked]</strong> <span class="cat">(Vocal)</span><div class="ex">Example: <code>[Chorus]</code> <code>[double-tracked]</code></div></div>
+          <div class="atomic">§3.2.7</div>
+          <div class="tag">[double-tracked]</div>
+          <div class="def">Thickens lead vocal with doubling.</div>
+          <div class="micro">Enhances hook impact.</div>
+          <div class="stars">★★★☆☆</div>
+          <div class="more"><div class="line">Pairs with <span class="k">width</span>=<span class="v">wide</span></div></div>
+        </div>
+
+        <div class="cell" data-cat="vocal" data-power="3" data-keywords="harmonies stacked choir">
+          <div class="tip">i</div><div class="tooltip"><strong>[harmonies]</strong> <span class="cat">(Vocal)</span><div class="ex">Example: <code>[harmonies]</code> <code>(3rd + 5th)</code></div></div>
+          <div class="atomic">§3.2.8</div>
+          <div class="tag">[harmonies]</div>
+          <div class="def">Adds stacked supporting lines.</div>
+          <div class="micro">Best in chorus or outro lift.</div>
+          <div class="stars">★★★☆☆</div>
+          <div class="more"><div class="line"><span class="k">stack</span>=<span class="v">2–6 layers</span></div></div>
+        </div>
+
+        <div class="cell" data-cat="vocal" data-power="2" data-keywords="spoken word talk">
+          <div class="tip">i</div><div class="tooltip"><strong>[spoken]</strong> <span class="cat">(Vocal)</span><div class="ex">Example: <code>[spoken]</code> <code>(dry)</code></div></div>
+          <div class="atomic">§3.2.9</div>
+          <div class="tag">[spoken]</div>
+          <div class="def">Speech-like delivery.</div>
+          <div class="micro">Can conflict with sung melody if overused.</div>
+          <div class="stars">★★☆☆☆</div>
+          <div class="more"><div class="line">Use for intro/bridge interludes.</div></div>
+        </div>
+
+        <div class="cell" data-cat="vocal" data-power="2" data-keywords="ad-lib adlibs">
+          <div class="tip">i</div><div class="tooltip"><strong>[ad-libs]</strong> <span class="cat">(Vocal)</span><div class="ex">Example: <code>[Chorus]</code> <code>[ad-libs]</code></div></div>
+          <div class="atomic">§3.2.10</div>
+          <div class="tag">[ad-libs]</div>
+          <div class="def">Background callouts and fills.</div>
+          <div class="micro">Specify “sparse” vs “busy.”</div>
+          <div class="stars">★★☆☆☆</div>
+          <div class="more"><div class="line"><span class="k">density</span>=<span class="v">sparse</span>/<span class="v">busy</span></div></div>
+        </div>
+
+        <div class="cell" data-cat="vocal" data-power="2" data-keywords="choir group vocals crowd">
+          <div class="tip">i</div><div class="tooltip"><strong>[gang vocals]</strong> <span class="cat">(Vocal)</span><div class="ex">Example: <code>[gang vocals]</code> <code>(anthem)</code></div></div>
+          <div class="atomic">§3.2.11</div>
+          <div class="tag">[gang vocals]</div>
+          <div class="def">Crowd-style shout/chant layer.</div>
+          <div class="micro">Use sparingly to keep hook readable.</div>
+          <div class="stars">★★☆☆☆</div>
+          <div class="more"><div class="line">Works with <span class="k">room</span>=<span class="v">large</span></div></div>
+        </div>
+
+        <div class="cell" data-cat="vocal" data-power="1" data-keywords="screamed harsh">
+          <div class="tip">i</div><div class="tooltip"><strong>[screamed]</strong> <span class="cat">(Vocal)</span><div class="ex">Example: <code>[screamed]</code> <code>(punk)</code></div><div class="warn">Can destabilize melodic intent—pair with genre anchor.</div></div>
+          <div class="atomic">§3.2.12</div>
+          <div class="tag">[screamed]</div>
+          <div class="def">Harsh vocal intensity.</div>
+          <div class="micro">High variance; needs strong style context.</div>
+          <div class="stars">★☆☆☆☆</div>
+          <div class="more"><div class="line">If unstable: use <code>[raspy]</code> instead.</div></div>
+        </div>
+
+        <!-- INSTRUMENTATION (lime) -->
+        <div class="cell" data-cat="instr" data-power="5" data-keywords="electric guitar jangly overdrive">
+          <div class="tip">i</div><div class="tooltip"><strong>guitar (jangly)</strong> <span class="cat">(Instr)</span><div class="ex">Example: <code>Jangly electric guitar</code> + <code>light overdrive</code></div></div>
+          <div class="atomic">§3.3.1</div>
+          <div class="tag">guitar: jangly</div>
+          <div class="def">Bright rhythmic guitar texture.</div>
+          <div class="micro">Three-layer: source + technique + treatment.</div>
+          <div class="stars">★★★★★</div>
+          <div class="more"><div class="line"><span class="k">technique</span>=<span class="v">downstrokes</span>, <span class="k">fx</span>=<span class="v">chorus</span></div></div>
+        </div>
+
+        <div class="cell" data-cat="instr" data-power="4" data-keywords="acoustic guitar strummed">
+          <div class="tip">i</div><div class="tooltip"><strong>acoustic guitar</strong> <span class="cat">(Instr)</span><div class="ex">Example: <code>strummed acoustic guitar</code> <code>dry</code></div></div>
+          <div class="atomic">§3.3.2</div>
+          <div class="tag">acoustic: strummed</div>
+          <div class="def">Warm rhythmic foundation.</div>
+          <div class="micro">Useful in verses for intimacy.</div>
+          <div class="stars">★★★★☆</div>
+          <div class="more"><div class="line"><span class="k">treatment</span>=<span class="v">room</span>/<span class="v">none</span></div></div>
+        </div>
+
+        <div class="cell" data-cat="instr" data-power="4" data-keywords="piano arpeggiated">
+          <div class="tip">i</div><div class="tooltip"><strong>piano (arp)</strong> <span class="cat">(Instr)</span><div class="ex">Example: <code>arpeggiated piano</code> + <code>hall reverb</code></div></div>
+          <div class="atomic">§3.3.3</div>
+          <div class="tag">piano: arpeggiated</div>
+          <div class="def">Motion bed for emotional lift.</div>
+          <div class="micro">Pairs with sidechain for pulse.</div>
+          <div class="stars">★★★★☆</div>
+          <div class="more"><div class="line"><span class="k">reverb</span>=<span class="v">hall</span> • <span class="k">tempo</span>=<span class="v">sync</span></div></div>
+        </div>
+
+        <div class="cell" data-cat="instr" data-power="5" data-keywords="808 sub bass">
+          <div class="tip">i</div><div class="tooltip"><strong>808 bass</strong> <span class="cat">(Instr)</span><div class="ex">Example: <code>808 sub bass</code> <code>glide</code></div></div>
+          <div class="atomic">§3.3.4</div>
+          <div class="tag">808: sub + glide</div>
+          <div class="def">Modern low-end anchor.</div>
+          <div class="micro">Specify decay and distortion if needed.</div>
+          <div class="stars">★★★★★</div>
+          <div class="more"><div class="line"><span class="k">decay</span>=<span class="v">short/long</span> • <span class="k">drive</span>=<span class="v">light</span></div></div>
+        </div>
+
+        <div class="cell" data-cat="instr" data-power="4" data-keywords="pads ambient synth">
+          <div class="tip">i</div><div class="tooltip"><strong>pads</strong> <span class="cat">(Instr)</span><div class="ex">Example: <code>ambient synth pads</code> <code>slow attack</code></div></div>
+          <div class="atomic">§3.3.5</div>
+          <div class="tag">pads: slow-attack</div>
+          <div class="def">Atmosphere + glue.</div>
+          <div class="micro">Great in intro/outro.</div>
+          <div class="stars">★★★★☆</div>
+          <div class="more"><div class="line"><span class="k">attack</span>=<span class="v">slow</span> • <span class="k">filter</span>=<span class="v">soft</span></div></div>
+        </div>
+
+        <div class="cell" data-cat="instr" data-power="3" data-keywords="pluck synth lead">
+          <div class="tip">i</div><div class="tooltip"><strong>synth pluck</strong> <span class="cat">(Instr)</span><div class="ex">Example: <code>bright synth pluck</code> <code>syncopated</code></div></div>
+          <div class="atomic">§3.3.6</div>
+          <div class="tag">synth: pluck</div>
+          <div class="def">Percussive melodic hook layer.</div>
+          <div class="micro">Use for rhythmic lead motifs.</div>
+          <div class="stars">★★★☆☆</div>
+          <div class="more"><div class="line"><span class="k">role</span>=<span class="v">lead</span>/<span class="v">counter</span></div></div>
+        </div>
+
+        <div class="cell" data-cat="instr" data-power="3" data-keywords="strings swell">
+          <div class="tip">i</div><div class="tooltip"><strong>strings</strong> <span class="cat">(Instr)</span><div class="ex">Example: <code>string swells</code> <code>cinematic</code></div></div>
+          <div class="atomic">§3.3.7</div>
+          <div class="tag">strings: swells</div>
+          <div class="def">Emotional rises + transitions.</div>
+          <div class="micro">Often best as background texture.</div>
+          <div class="stars">★★★☆☆</div>
+          <div class="more"><div class="line"><span class="k">density</span>=<span class="v">low</span> • <span class="k">reverb</span>=<span class="v">large</span></div></div>
+        </div>
+
+        <div class="cell" data-cat="instr" data-power="4" data-keywords="drums punchy">
+          <div class="tip">i</div><div class="tooltip"><strong>drums (punchy)</strong> <span class="cat">(Instr)</span><div class="ex">Example: <code>punchy drums</code> <code>tight kick</code></div></div>
+          <div class="atomic">§3.3.8</div>
+          <div class="tag">drums: punchy</div>
+          <div class="def">Rhythm clarity and impact.</div>
+          <div class="micro">Specify swing if genre demands.</div>
+          <div class="stars">★★★★☆</div>
+          <div class="more"><div class="line"><span class="k">swing</span>=<span class="v">0–15%</span> optional</div></div>
+        </div>
+
+        <div class="cell" data-cat="instr" data-power="3" data-keywords="hi hats fast rolls">
+          <div class="tip">i</div><div class="tooltip"><strong>hi-hats (rolls)</strong> <span class="cat">(Instr)</span><div class="ex">Example: <code>fast hi-hat rolls</code> <code>trap</code></div></div>
+          <div class="atomic">§3.3.9</div>
+          <div class="tag">hi-hats: rolls</div>
+          <div class="def">High-frequency motion & urgency.</div>
+          <div class="micro">Can clutter; keep arrangement clean.</div>
+          <div class="stars">★★★☆☆</div>
+          <div class="more"><div class="line"><span class="k">density</span>=<span class="v">medium</span> recommended</div></div>
+        </div>
+
+        <div class="cell" data-cat="instr" data-power="2" data-keywords="synth bass">
+          <div class="tip">i</div><div class="tooltip"><strong>synth bass</strong> <span class="cat">(Instr)</span><div class="ex">Example: <code>mono synth bass</code> <code>tight</code></div></div>
+          <div class="atomic">§3.3.10</div>
+          <div class="tag">bass: mono synth</div>
+          <div class="def">Alternative to 808.</div>
+          <div class="micro">Better for retro/electro.</div>
+          <div class="stars">★★☆☆☆</div>
+          <div class="more"><div class="line">If modern: prefer <code>808</code>.</div></div>
+        </div>
+
+        <div class="cell" data-cat="instr" data-power="2" data-keywords="brass stabs">
+          <div class="tip">i</div><div class="tooltip"><strong>brass stabs</strong> <span class="cat">(Instr)</span><div class="ex">Example: <code>brass stabs</code> <code>short</code></div></div>
+          <div class="atomic">§3.3.11</div>
+          <div class="tag">brass: stabs</div>
+          <div class="def">Accents and punch hits.</div>
+          <div class="micro">Genre dependent (funk, pop).</div>
+          <div class="stars">★★☆☆☆</div>
+          <div class="more"><div class="line"><span class="k">timing</span>=<span class="v">syncopated</span></div></div>
+        </div>
+
+        <div class="cell" data-cat="instr" data-power="2" data-keywords="arp synth sequence">
+          <div class="tip">i</div><div class="tooltip"><strong>synth arp</strong> <span class="cat">(Instr)</span><div class="ex">Example: <code>sequenced synth arp</code> <code>tempo-synced</code></div></div>
+          <div class="atomic">§3.3.12</div>
+          <div class="tag">synth: arp</div>
+          <div class="def">Clocked arpeggio pattern.</div>
+          <div class="micro">Good for driving mid layer.</div>
+          <div class="stars">★★☆☆☆</div>
+          <div class="more"><div class="line"><span class="k">rate</span>=<span class="v">1/8</span> or <span class="v">1/16</span></div></div>
+        </div>
+
+        <!-- PRODUCTION (amber) -->
+        <div class="cell" data-cat="prod" data-power="5" data-keywords="compression punch">
+          <div class="tip">i</div><div class="tooltip"><strong>compression</strong> <span class="cat">(Prod)</span><div class="ex">Example: <code>tight compression</code> <code>punchy</code></div></div>
+          <div class="atomic">§3.4.1</div>
+          <div class="tag">compression: tight</div>
+          <div class="def">Controls dynamics, adds punch.</div>
+          <div class="micro">Avoid stacking too many adjectives.</div>
+          <div class="stars">★★★★★</div>
+          <div class="more"><div class="line"><span class="k">amount</span>=<span class="v">light→heavy</span> • <span class="k">attack</span>=<span class="v">fast</span></div></div>
+        </div>
+
+        <div class="cell" data-cat="prod" data-power="5" data-keywords="reverb space hall plate">
+          <div class="tip">i</div><div class="tooltip"><strong>reverb</strong> <span class="cat">(Prod)</span><div class="ex">Example: <code>plate reverb</code> <code>short</code></div></div>
+          <div class="atomic">§3.4.2</div>
+          <div class="tag">reverb: plate</div>
+          <div class="def">Defines depth + environment.</div>
+          <div class="micro">Name type + size, not 10 synonyms.</div>
+          <div class="stars">★★★★★</div>
+          <div class="more"><div class="line">Types: <span class="v">plate</span> / <span class="v">hall</span> / <span class="v">room</span></div></div>
+        </div>
+
+        <div class="cell" data-cat="prod" data-power="4" data-keywords="delay slapback echo">
+          <div class="tip">i</div><div class="tooltip"><strong>delay</strong> <span class="cat">(Prod)</span><div class="ex">Example: <code>slapback delay</code> <code>subtle</code></div></div>
+          <div class="atomic">§3.4.3</div>
+          <div class="tag">delay: slapback</div>
+          <div class="def">Echo / rhythmic repeats.</div>
+          <div class="micro">Specify timing: 1/8, dotted, etc.</div>
+          <div class="stars">★★★★☆</div>
+          <div class="more"><div class="line"><span class="k">time</span>=<span class="v">1/8</span> • <span class="k">mix</span>=<span class="v">low</span></div></div>
+        </div>
+
+        <div class="cell" data-cat="prod" data-power="5" data-keywords="stereo width wide">
+          <div class="tip">i</div><div class="tooltip"><strong>stereo width</strong> <span class="cat">(Prod)</span><div class="ex">Example: <code>wide stereo chorus</code></div></div>
+          <div class="atomic">§3.4.4</div>
+          <div class="tag">width: wide</div>
+          <div class="def">Perceived spaciousness left/right.</div>
+          <div class="micro">Great for chorus; keep bass mono.</div>
+          <div class="stars">★★★★★</div>
+          <div class="more"><div class="line">Rule: bass mono, pads wide.</div></div>
+        </div>
+
+        <div class="cell" data-cat="prod" data-power="4" data-keywords="saturation warm tape">
+          <div class="tip">i</div><div class="tooltip"><strong>saturation</strong> <span class="cat">(Prod)</span><div class="ex">Example: <code>tape saturation</code> <code>warm</code></div></div>
+          <div class="atomic">§3.4.5</div>
+          <div class="tag">saturation: tape</div>
+          <div class="def">Harmonic richness / grit.</div>
+          <div class="micro">Specify character: tape vs tube.</div>
+          <div class="stars">★★★★☆</div>
+          <div class="more"><div class="line"><span class="k">type</span>=<span class="v">tape</span>/<span class="v">tube</span> • <span class="k">amount</span>=<span class="v">light</span></div></div>
+        </div>
+
+        <div class="cell" data-cat="prod" data-power="4" data-keywords="lofi noise vinyl">
+          <div class="tip">i</div><div class="tooltip"><strong>lo-fi</strong> <span class="cat">(Prod)</span><div class="ex">Example: <code>lo-fi texture</code> <code>vinyl noise</code></div></div>
+          <div class="atomic">§3.4.6</div>
+          <div class="tag">lo-fi: texture</div>
+          <div class="def">Intentional degradation.</div>
+          <div class="micro">Use as color, not core clarity.</div>
+          <div class="stars">★★★★☆</div>
+          <div class="more"><div class="line"><span class="k">noise</span>=<span class="v">vinyl</span> • <span class="k">bitrate</span>=<span class="v">low</span></div></div>
+        </div>
+
+        <div class="cell" data-cat="prod" data-power="3" data-keywords="sidechain pump">
+          <div class="tip">i</div><div class="tooltip"><strong>sidechain</strong> <span class="cat">(Prod)</span><div class="ex">Example: <code>sidechain pumping</code> <code>to kick</code></div></div>
+          <div class="atomic">§3.4.7</div>
+          <div class="tag">sidechain: pump</div>
+          <div class="def">Rhythmic ducking for groove.</div>
+          <div class="micro">Best in EDM / modern pop.</div>
+          <div class="stars">★★★☆☆</div>
+          <div class="more"><div class="line"><span class="k">target</span>=<span class="v">pads</span>/<span class="v">bass</span></div></div>
+        </div>
+
+        <div class="cell" data-cat="prod" data-power="3" data-keywords="filter lowpass sweep">
+          <div class="tip">i</div><div class="tooltip"><strong>filter sweep</strong> <span class="cat">(Prod)</span><div class="ex">Example: <code>lowpass filter sweep</code></div></div>
+          <div class="atomic">§3.4.8</div>
+          <div class="tag">filter: lowpass</div>
+          <div class="def">Builds and transitions.</div>
+          <div class="micro">Great on breakdown/outro.</div>
+          <div class="stars">★★★☆☆</div>
+          <div class="more"><div class="line"><span class="k">motion</span>=<span class="v">slow→fast</span></div></div>
+        </div>
+
+        <div class="cell" data-cat="prod" data-power="2" data-keywords="distortion aggressive">
+          <div class="tip">i</div><div class="tooltip"><strong>distortion</strong> <span class="cat">(Prod)</span><div class="ex">Example: <code>aggressive distortion</code> <code>on bass</code></div></div>
+          <div class="atomic">§3.4.9</div>
+          <div class="tag">distortion: drive</div>
+          <div class="def">Adds bite and loudness.</div>
+          <div class="micro">High risk of muddiness if overused.</div>
+          <div class="stars">★★☆☆☆</div>
+          <div class="more"><div class="line">Prefer: <code>light saturation</code> first.</div></div>
+        </div>
+
+        <div class="cell" data-cat="prod" data-power="2" data-keywords="mono narrow">
+          <div class="tip">i</div><div class="tooltip"><strong>mono</strong> <span class="cat">(Prod)</span><div class="ex">Example: <code>mono verse</code> <code>wide chorus</code></div></div>
+          <div class="atomic">§3.4.10</div>
+          <div class="tag">width: mono</div>
+          <div class="def">Narrow image for focus.</div>
+          <div class="micro">Use for verses to make choruses pop.</div>
+          <div class="stars">★★☆☆☆</div>
+          <div class="more"><div class="line">Contrast trick: mono→wide.</div></div>
+        </div>
+
+        <div class="cell" data-cat="prod" data-power="1" data-keywords="glitch random">
+          <div class="tip">i</div><div class="tooltip"><strong>glitch</strong> <span class="cat">(Prod)</span><div class="ex">Example: <code>glitch edits</code> <code>micro-cuts</code></div><div class="warn">Can reduce coherence—use with restraint.</div></div>
+          <div class="atomic">§3.4.11</div>
+          <div class="tag">glitch: edits</div>
+          <div class="def">Stutter/cut effects.</div>
+          <div class="micro">High variance; may destabilize groove.</div>
+          <div class="stars">★☆☆☆☆</div>
+          <div class="more"><div class="line">Use sparingly: <span class="v">1–2 moments</span></div></div>
+        </div>
+
+        <div class="cell" data-cat="prod" data-power="3" data-keywords="master loudness">
+          <div class="tip">i</div><div class="tooltip"><strong>mastering</strong> <span class="cat">(Prod)</span><div class="ex">Example: <code>modern loud mastering</code> <code>clean</code></div></div>
+          <div class="atomic">§3.4.12</div>
+          <div class="tag">master: clean</div>
+          <div class="def">Final polish and loudness profile.</div>
+          <div class="micro">Describe target vibe, not technical LUFS.</div>
+          <div class="stars">★★★☆☆</div>
+          <div class="more"><div class="line"><span class="k">goal</span>=<span class="v">clean</span>/<span class="v">gritty</span></div></div>
+        </div>
+
+        <!-- Extra density: additional tiles to hit 40+ -->
+        <div class="cell" data-cat="section" data-power="3" data-keywords="post chorus">
+          <div class="tip">i</div><div class="tooltip"><strong>[Post-Chorus]</strong> <span class="cat">(Section)</span><div class="ex">Example: <code>[Post-Chorus]</code> <code>(melodic riff)</code></div></div>
+          <div class="atomic">§3.1.13</div>
+          <div class="tag">[Post-Chorus]</div>
+          <div class="def">Hook extension after chorus.</div>
+          <div class="micro">Often instrumental or ad-libs.</div>
+          <div class="stars">★★★☆☆</div>
+          <div class="more"><div class="line">Duration: <span class="v">4–8 bars</span></div></div>
+        </div>
+
+        <div class="cell" data-cat="section" data-power="2" data-keywords="interlude">
+          <div class="tip">i</div><div class="tooltip"><strong>[Interlude]</strong> <span class="cat">(Section)</span><div class="ex">Example: <code>[Interlude]</code> <code>(ambient)</code></div></div>
+          <div class="atomic">§3.1.14</div>
+          <div class="tag">[Interlude]</div>
+          <div class="def">Short connective tissue.</div>
+          <div class="micro">Use to reset ear without a full bridge.</div>
+          <div class="stars">★★☆☆☆</div>
+          <div class="more"><div class="line">Avoid too long; keep momentum.</div></div>
+        </div>
+
+        <div class="cell" data-cat="vocal" data-power="3" data-keywords="breathy airy">
+          <div class="tip">i</div><div class="tooltip"><strong>[breathy]</strong> <span class="cat">(Vocal)</span><div class="ex">Example: <code>[breathy]</code> + <code>(close)</code></div></div>
+          <div class="atomic">§3.2.13</div>
+          <div class="tag">[breathy]</div>
+          <div class="def">Air-heavy timbre.</div>
+          <div class="micro">Good for intimacy and fragility.</div>
+          <div class="stars">★★★☆☆</div>
+          <div class="more"><div class="line">If too thin: add <span class="k">double</span>=<span class="v">light</span></div></div>
+        </div>
+
+        <div class="cell" data-cat="vocal" data-power="3" data-keywords="melismatic runs">
+          <div class="tip">i</div><div class="tooltip"><strong>[melismatic]</strong> <span class="cat">(Vocal)</span><div class="ex">Example: <code>[melismatic]</code> <code>(runs)</code></div></div>
+          <div class="atomic">§3.2.14</div>
+          <div class="tag">[melismatic]</div>
+          <div class="def">Runs and note ornaments.</div>
+          <div class="micro">Best used as flavor, not constant.</div>
+          <div class="stars">★★★☆☆</div>
+          <div class="more"><div class="line">Use: <span class="v">sparingly</span> for clarity.</div></div>
+        </div>
+
+        <div class="cell" data-cat="instr" data-power="3" data-keywords="sub bass sine">
+          <div class="tip">i</div><div class="tooltip"><strong>sub (sine)</strong> <span class="cat">(Instr)</span><div class="ex">Example: <code>sine sub bass</code> <code>clean</code></div></div>
+          <div class="atomic">§3.3.13</div>
+          <div class="tag">sub: sine</div>
+          <div class="def">Pure low-end foundation.</div>
+          <div class="micro">Less character than 808; very clean.</div>
+          <div class="stars">★★★☆☆</div>
+          <div class="more"><div class="line">Pairs with <span class="k">kick</span>=<span class="v">tight</span></div></div>
+        </div>
+
+        <div class="cell" data-cat="instr" data-power="2" data-keywords="claps snaps">
+          <div class="tip">i</div><div class="tooltip"><strong>clap/snare</strong> <span class="cat">(Instr)</span><div class="ex">Example: <code>snappy clap</code></div></div>
+          <div class="atomic">§3.3.14</div>
+          <div class="tag">snare: snappy</div>
+          <div class="def">Backbeat definition.</div>
+          <div class="micro">Describe tone: “crack” vs “thud.”</div>
+          <div class="stars">★★☆☆☆</div>
+          <div class="more"><div class="line"><span class="k">tone</span>=<span class="v">crack</span>/<span class="v">thud</span></div></div>
+        </div>
+
+        <div class="cell" data-cat="prod" data-power="4" data-keywords="chorus effect modulation">
+          <div class="tip">i</div><div class="tooltip"><strong>chorus (fx)</strong> <span class="cat">(Prod)</span><div class="ex">Example: <code>subtle chorus</code> <code>on guitar</code></div></div>
+          <div class="atomic">§3.4.13</div>
+          <div class="tag">mod: chorus</div>
+          <div class="def">Modulation width + shimmer.</div>
+          <div class="micro">Very genre-specific (80s, alt, emo).</div>
+          <div class="stars">★★★★☆</div>
+          <div class="more"><div class="line"><span class="k">depth</span>=<span class="v">subtle</span> recommended</div></div>
+        </div>
+
+        <div class="cell" data-cat="prod" data-power="3" data-keywords="automation build">
+          <div class="tip">i</div><div class="tooltip"><strong>automation</strong> <span class="cat">(Prod)</span><div class="ex">Example: <code>automation build</code> <code>(filter + volume)</code></div></div>
+          <div class="atomic">§3.4.14</div>
+          <div class="tag">automation: build</div>
+          <div class="def">Gradual changes over time.</div>
+          <div class="micro">Use to create lift without new parts.</div>
+          <div class="stars">★★★☆☆</div>
+          <div class="more"><div class="line">Targets: <span class="v">filter</span>, <span class="v">reverb</span>, <span class="v">volume</span></div></div>
+        </div>
+
+        <div class="cell" data-cat="section" data-power="3" data-keywords="hook prehook">
+          <div class="tip">i</div><div class="tooltip"><strong>[Build]</strong> <span class="cat">(Section)</span><div class="ex">Example: <code>[Build]</code> <code>(riser)</code></div></div>
+          <div class="atomic">§3.1.15</div>
+          <div class="tag">[Build]</div>
+          <div class="def">Explicit ramp-up segment.</div>
+          <div class="micro">Helpful in EDM / pop arrangements.</div>
+          <div class="stars">★★★☆☆</div>
+          <div class="more"><div class="line">Pair with <code>snare roll</code> + <code>riser</code></div></div>
+        </div>
+
+        <div class="cell" data-cat="vocal" data-power="2" data-keywords="call response">
+          <div class="tip">i</div><div class="tooltip"><strong>[call-and-response]</strong> <span class="cat">(Vocal)</span><div class="ex">Example: <code>[call-and-response]</code> <code>(group replies)</code></div></div>
+          <div class="atomic">§3.2.15</div>
+          <div class="tag">[call-and-response]</div>
+          <div class="def">Alternating lead + reply.</div>
+          <div class="micro">Needs clear section structure.</div>
+          <div class="stars">★★☆☆☆</div>
+          <div class="more"><div class="line">Use for hooks and chants.</div></div>
+        </div>
+
+        <div class="cell" data-cat="instr" data-power="3" data-keywords="lead synth distorted">
+          <div class="tip">i</div><div class="tooltip"><strong>lead synth</strong> <span class="cat">(Instr)</span><div class="ex">Example: <code>distorted lead synth</code> <code>mono</code></div></div>
+          <div class="atomic">§3.3.15</div>
+          <div class="tag">lead: distorted</div>
+          <div class="def">Cutting melodic lead voice.</div>
+          <div class="micro">Specify octave/register for clarity.</div>
+          <div class="stars">★★★☆☆</div>
+          <div class="more"><div class="line"><span class="k">register</span>=<span class="v">mid/high</span></div></div>
+        </div>
+
+        <div class="cell" data-cat="prod" data-power="3" data-keywords="eq carve">
+          <div class="tip">i</div><div class="tooltip"><strong>EQ carving</strong> <span class="cat">(Prod)</span><div class="ex">Example: <code>carved mids</code> <code>clean low end</code></div></div>
+          <div class="atomic">§3.4.15</div>
+          <div class="tag">EQ: carve</div>
+          <div class="def">Frequency separation.</div>
+          <div class="micro">Say what you want: “clear low end,” “scooped mids.”</div>
+          <div class="stars">★★★☆☆</div>
+          <div class="more"><div class="line"><span class="k">goal</span>=<span class="v">clarity</span> / <span class="v">warmth</span></div></div>
+        </div>
+
+        <div class="cell" data-cat="prod" data-power="2" data-keywords="reverse reverb">
+          <div class="tip">i</div><div class="tooltip"><strong>reverse fx</strong> <span class="cat">(Prod)</span><div class="ex">Example: <code>reverse reverb swell</code></div></div>
+          <div class="atomic">§3.4.16</div>
+          <div class="tag">fx: reverse swell</div>
+          <div class="def">Pre-hit whoosh and swell.</div>
+          <div class="micro">Useful for transitions.</div>
+          <div class="stars">★★☆☆☆</div>
+          <div class="more"><div class="line">Best before chorus drop-in.</div></div>
+        </div>
+
+        <div class="cell" data-cat="instr" data-power="2" data-keywords="kick 4 on the floor">
+          <div class="tip">i</div><div class="tooltip"><strong>kick pattern</strong> <span class="cat">(Instr)</span><div class="ex">Example: <code>four-on-the-floor kick</code></div></div>
+          <div class="atomic">§3.3.16</div>
+          <div class="tag">kick: 4-on-floor</div>
+          <div class="def">Steady dance foundation.</div>
+          <div class="micro">Most useful for EDM/house.</div>
+          <div class="stars">★★☆☆☆</div>
+          <div class="more"><div class="line">If trap: specify syncopation instead.</div></div>
+        </div>
+
+        <div class="cell" data-cat="section" data-power="2" data-keywords="reprise return theme">
+          <div class="tip">i</div><div class="tooltip"><strong>[Reprise]</strong> <span class="cat">(Section)</span><div class="ex">Example: <code>[Reprise]</code> <code>(return motif)</code></div></div>
+          <div class="atomic">§3.1.16</div>
+          <div class="tag">[Reprise]</div>
+          <div class="def">Returns to an earlier motif.</div>
+          <div class="micro">Nice for endings and narrative closure.</div>
+          <div class="stars">★★☆☆☆</div>
+          <div class="more"><div class="line">Keep it short: <span class="v">4–8 bars</span></div></div>
+        </div>
+
+        <div class="cell" data-cat="vocal" data-power="2" data-keywords="stacked whispers">
+          <div class="tip">i</div><div class="tooltip"><strong>[layered whispers]</strong> <span class="cat">(Vocal)</span><div class="ex">Example: <code>[layered whispers]</code> <code>(stereo)</code></div></div>
+          <div class="atomic">§3.2.16</div>
+          <div class="tag">[layered whispers]</div>
+          <div class="def">Whisper layers for eerie width.</div>
+          <div class="micro">Great for intros / breakdowns.</div>
+          <div class="stars">★★☆☆☆</div>
+          <div class="more"><div class="line"><span class="k">width</span>=<span class="v">wide</span> • <span class="k">mix</span>=<span class="v">low</span></div></div>
+        </div>
+      </section>
+    </main>
+
+    <div class="foot">
+      <span><b>Power level</b> = frequency of use → glow intensity</span>
+      <span><b>Hover</b> shows variations + inheritance + reliability</span>
+      <span><b>Search</b> dims non-matching tiles (spotlight)</span>
+    </div>
+  </div>
+
+<script>
+  const q = document.getElementById('q');
+  const cells = Array.from(document.querySelectorAll('.cell'));
+
+  const filters = {
+    section: document.getElementById('f_section'),
+    vocal: document.getElementById('f_vocal'),
+    instr: document.getElementById('f_instr'),
+    prod: document.getElementById('f_prod'),
+  };
+
+  function norm(s){ return (s||'').toLowerCase().trim(); }
+
+  function apply(){
+    const query = norm(q.value);
+    const activeCats = Object.fromEntries(Object.entries(filters).map(([k,el])=>[k, el.checked]));
+
+    // First: hide categories that are unchecked
+    cells.forEach(c=>{
+      const cat = c.dataset.cat;
+      const allowCat = !!activeCats[cat];
+      c.classList.toggle('hidden', !allowCat);
+    });
+
+    // Second: spotlight by search (dim non-matching, but only for visible cells)
+    if(!query){
+      cells.forEach(c=> c.classList.remove('dimmed'));
+      return;
+    }
+
+    const tokens = query.split(/\s+/).filter(Boolean);
+    cells.forEach(c=>{
+      if(c.classList.contains('hidden')){ c.classList.remove('dimmed'); return; }
+
+      const hay = norm(
+        (c.querySelector('.atomic')?.textContent||'') + ' ' +
+        (c.querySelector('.tag')?.textContent||'') + ' ' +
+        (c.querySelector('.def')?.textContent||'') + ' ' +
+        (c.querySelector('.micro')?.textContent||'') + ' ' +
+        (c.dataset.keywords||'') + ' ' +
+        (c.querySelector('.tooltip')?.textContent||'')
+      );
+
+      const hit = tokens.every(t => hay.includes(t));
+      c.classList.toggle('dimmed', !hit);
+    });
+  }
+
+  Object.values(filters).forEach(el => el.addEventListener('change', apply));
+  q.addEventListener('input', apply);
+
+  // Keyboard niceties: "/" focuses search, Esc clears
+  window.addEventListener('keydown', (e)=>{
+    if(e.key === '/' && document.activeElement !== q){
+      e.preventDefault();
+      q.focus();
+    }
+    if(e.key === 'Escape'){
+      q.value = '';
+      q.blur();
+      apply();
+    }
+  });
+
+  apply();
+</script>
+</body>
+</html>

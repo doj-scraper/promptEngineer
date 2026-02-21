@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Meta Tag Command Center</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;600&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#000;
+      --phosphor:#00ff66;   /* slightly softer than pure #0f0 */
+      --phosphor-2:#00ffaa;
+      --cyan:#00e5ff;
+      --magenta:#ff2bd6;
+      --amber:#ffb000;
+      --dim:rgba(0,255,102,.55);
+      --dim2:rgba(0,255,102,.35);
+      --panel:rgba(0,0,0,.65);
+      --border:rgba(0,255,102,.22);
+      --glow:rgba(0,255,102,.25);
+    }
+
+    *{ box-sizing:border-box; }
+    html,body{ height:100%; }
+    body{
+      margin:0;
+      background: radial-gradient(1200px 600px at 50% 20%, rgba(0,255,102,.08), transparent 60%),
+                  radial-gradient(900px 500px at 20% 90%, rgba(0,229,255,.06), transparent 55%),
+                  #000;
+      color: var(--phosphor);
+      font-family: "Fira Code", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      letter-spacing: .2px;
+      overflow-x:hidden;
+      padding: 22px;
+    }
+
+    /* CRT container */
+    .crt{
+      max-width: 1400px;
+      margin: 0 auto;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      background: rgba(0,0,0,.72);
+      box-shadow:
+        0 30px 80px rgba(0,0,0,.75),
+        0 0 0 1px rgba(0,255,102,.08) inset,
+        0 0 80px rgba(0,255,102,.08);
+      position: relative;
+      overflow: hidden;
+      transform: translateZ(0);
+    }
+
+    /* Screen curvature + reflection */
+    .crt::before{
+      content:"";
+      position:absolute;
+      inset:-30px;
+      background:
+        radial-gradient(1200px 700px at 50% -10%, rgba(255,255,255,.12), transparent 60%),
+        radial-gradient(900px 600px at 120% 50%, rgba(255,255,255,.06), transparent 55%),
+        radial-gradient(900px 600px at -20% 60%, rgba(255,255,255,.05), transparent 55%);
+      pointer-events:none;
+      mix-blend-mode: screen;
+      opacity:.35;
+      transform: perspective(1200px) rotateX(2deg);
+    }
+
+    /* Scanlines + subtle noise */
+    .crt::after{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:
+        repeating-linear-gradient(
+          to bottom,
+          rgba(255,255,255,.035) 0px,
+          rgba(255,255,255,.035) 1px,
+          rgba(0,0,0,0) 3px,
+          rgba(0,0,0,0) 6px
+        ),
+        radial-gradient(circle at 50% 50%, rgba(0,255,102,.06), transparent 60%);
+      pointer-events:none;
+      opacity:.55;
+      animation: flicker 6.5s infinite;
+    }
+
+    @keyframes flicker{
+      0%,100%{ opacity:.52; }
+      10%{ opacity:.58; }
+      11%{ opacity:.48; }
+      20%{ opacity:.60; }
+      35%{ opacity:.50; }
+      55%{ opacity:.62; }
+      70%{ opacity:.50; }
+      85%{ opacity:.60; }
+    }
+
+    /* Header / breadcrumbs */
+    .topbar{
+      padding: 14px 18px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 14px;
+      border-bottom: 1px solid var(--border);
+      background: linear-gradient(180deg, rgba(0,255,102,.07), rgba(0,0,0,0));
+      position: relative;
+      z-index: 2;
+    }
+
+    .breadcrumbs{
+      font-size: 12px;
+      color: var(--dim);
+      text-shadow:
+        0 0 10px rgba(0,255,102,.14),
+        -1px 0 rgba(0,229,255,.12),
+        1px 0 rgba(255,43,214,.10);
+      white-space: nowrap;
+      overflow:hidden;
+      text-overflow: ellipsis;
+    }
+    .breadcrumbs .sep{ opacity:.55; padding:0 6px; }
+    .breadcrumbs .active{
+      color: var(--phosphor);
+      text-shadow:
+        0 0 12px rgba(0,255,102,.24),
+        -1px 0 rgba(0,229,255,.18),
+        1px 0 rgba(255,43,214,.14);
+    }
+
+    .title{
+      font-size: 12px;
+      color: var(--dim);
+      display:flex;
+      align-items:center;
+      gap: 10px;
+    }
+    .pill{
+      border:1px solid var(--border);
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: rgba(0,255,102,.06);
+      color: var(--phosphor-2);
+      box-shadow: 0 0 14px rgba(0,255,102,.07);
+    }
+
+    /* Layout */
+    .grid{
+      display:grid;
+      grid-template-columns: 1.05fr 1.25fr 1.0fr;
+      gap: 14px;
+      padding: 16px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .pane{
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: rgba(0,0,0,.55);
+      box-shadow: 0 0 0 1px rgba(0,255,102,.05) inset;
+      overflow:hidden;
+      min-height: 560px;
+    }
+
+    .pane-header{
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 10px;
+      background: linear-gradient(180deg, rgba(0,255,102,.06), rgba(0,0,0,0));
+    }
+    .pane-title{
+      font-size: 12px;
+      color: var(--dim);
+      text-transform: uppercase;
+      letter-spacing: 1.8px;
+    }
+    .pane-meta{
+      font-size: 11px;
+      color: rgba(0,255,102,.45);
+    }
+
+    .pane-body{
+      padding: 12px;
+      line-height: 1.45;
+      font-size: 12.5px;
+      color: rgba(0,255,102,.82);
+      text-shadow:
+        0 0 10px rgba(0,255,102,.10),
+        -1px 0 rgba(0,229,255,.07),
+        1px 0 rgba(255,43,214,.06);
+    }
+
+    /* Syntax highlighting */
+    .tag{ color: var(--cyan); }
+    .attr{ color: var(--magenta); }
+    .val{ color: var(--phosphor); }
+    .comment{ color: rgba(0,255,102,.42); }
+    .warn{ color: var(--amber); }
+    .muted{ color: rgba(0,255,102,.52); }
+
+    /* Left tree */
+    details{ border-radius: 10px; }
+    details + details{ margin-top: 8px; }
+    summary{
+      cursor:pointer;
+      list-style:none;
+      display:flex;
+      align-items:center;
+      gap: 8px;
+      padding: 8px 10px;
+      border: 1px solid rgba(0,255,102,.16);
+      border-radius: 10px;
+      background: rgba(0,255,102,.04);
+      user-select:none;
+    }
+    summary::-webkit-details-marker{ display:none; }
+    summary::before{
+      content:"▸";
+      color: rgba(0,255,102,.55);
+      transition: transform .18s ease;
+    }
+    details[open] summary::before{
+      transform: rotate(90deg);
+      color: var(--phosphor-2);
+    }
+    .tree-item{
+      padding: 8px 10px 10px;
+      margin-top: 6px;
+      border-left: 1px dashed rgba(0,255,102,.18);
+      margin-left: 14px;
+    }
+    .tree-line{
+      display:flex;
+      gap: 10px;
+      padding: 4px 0;
+      align-items: baseline;
+      flex-wrap: wrap;
+    }
+    .kbd{
+      font-size: 11px;
+      color: rgba(0,255,102,.65);
+      border: 1px solid rgba(0,255,102,.18);
+      background: rgba(0,255,102,.04);
+      padding: 2px 6px;
+      border-radius: 8px;
+    }
+
+    /* Center hierarchy blocks */
+    .block{
+      border: 1px solid rgba(0,255,102,.16);
+      border-radius: 12px;
+      background: rgba(0,255,102,.03);
+      padding: 10px;
+      margin-bottom: 10px;
+    }
+    .block-title{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 10px;
+      margin-bottom: 8px;
+      color: rgba(0,255,102,.70);
+      font-size: 12px;
+      letter-spacing: .6px;
+      text-transform: uppercase;
+    }
+    .block-title .right{
+      color: rgba(0,255,102,.42);
+      font-size: 11px;
+      text-transform:none;
+      letter-spacing: 0;
+    }
+    .code{
+      font-size: 12.5px;
+      white-space: pre;
+      overflow-x:auto;
+      padding: 8px 10px;
+      border-radius: 10px;
+      border: 1px solid rgba(0,255,102,.12);
+      background: rgba(0,0,0,.40);
+    }
+
+    /* ASCII table */
+    .ascii{
+      font-size: 12px;
+      white-space: pre;
+      padding: 8px 10px;
+      border-radius: 12px;
+      border: 1px solid rgba(0,255,102,.14);
+      background: rgba(0,0,0,.42);
+      overflow-x:auto;
+    }
+
+    /* Blinking cursor */
+    .cursor{
+      display:inline-block;
+      width: 10px;
+      height: 16px;
+      margin-left: 2px;
+      transform: translateY(3px);
+      background: rgba(0,255,102,.85);
+      box-shadow: 0 0 14px rgba(0,255,102,.24);
+      animation: blink 1s steps(2,end) infinite;
+    }
+    @keyframes blink{
+      0%, 49%{ opacity: 1; }
+      50%, 100%{ opacity: 0; }
+    }
+
+    /* Bottom status bar */
+    .statusbar{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap: 12px;
+      padding: 10px 14px;
+      border-top: 1px solid var(--border);
+      background: linear-gradient(0deg, rgba(0,255,102,.06), rgba(0,0,0,0));
+      color: rgba(0,255,102,.55);
+      font-size: 11.5px;
+      position: relative;
+      z-index: 2;
+    }
+    .statusbar strong{ color: rgba(0,255,102,.85); font-weight:600; }
+    .statusbar .meter{
+      display:flex;
+      align-items:center;
+      gap: 8px;
+      white-space: nowrap;
+    }
+    .bar{
+      width: 140px;
+      height: 8px;
+      border-radius: 999px;
+      background: rgba(0,255,102,.10);
+      border: 1px solid rgba(0,255,102,.12);
+      overflow:hidden;
+    }
+    .bar > i{
+      display:block;
+      height:100%;
+      width:80%;
+      background: linear-gradient(90deg, rgba(0,255,102,.22), rgba(0,255,102,.85));
+      box-shadow: 0 0 20px rgba(0,255,102,.18);
+    }
+
+    /* Mobile */
+    @media (max-width: 980px){
+      body{ padding: 14px; }
+      .grid{ grid-template-columns: 1fr; }
+      .pane{ min-height: auto; }
+      .topbar{ flex-direction: column; align-items:flex-start; }
+    }
+  </style>
+</head>
+<body>
+  <div class="crt" role="application" aria-label="Meta Tag Command Center">
+    <div class="topbar">
+      <div class="breadcrumbs">
+        <span class="muted">Global</span><span class="sep">></span>
+        <span class="muted">Inheritance</span><span class="sep">></span>
+        <span class="active">[Chorus]</span><span class="sep">></span>
+        <span class="muted">Override</span>
+      </div>
+      <div class="title">
+        <span class="pill">META TAG COMMAND CENTER</span>
+        <span class="muted">tmux://session=v5 • crt://scanline=on</span>
+      </div>
+    </div>
+
+    <div class="grid">
+      <!-- LEFT PANE -->
+      <section class="pane">
+        <div class="pane-header">
+          <div class="pane-title">Section Labels Tree</div>
+          <div class="pane-meta">collapsible • labels</div>
+        </div>
+        <div class="pane-body">
+          <div class="comment"># Structure tags (section markers). Use bracket labels to enforce song segmentation.</div>
+
+          <details open>
+            <summary><span class="tag">[Intro]</span> <span class="muted">ambient pads / low energy</span></summary>
+            <div class="tree-item">
+              <div class="tree-line"><span class="kbd">bars</span> <span class="val">4–8</span></div>
+              <div class="tree-line"><span class="kbd">texture</span> <span class="val">thin → medium</span></div>
+              <div class="tree-line"><span class="kbd">tags</span> <span class="tag">[instrumental]</span> <span class="tag">[no drums]</span></div>
+            </div>
+          </details>
+
+          <details open>
+            <summary><span class="tag">[Verse]</span> <span class="muted">narrative / restraint</span></summary>
+            <div class="tree-item">
+              <div class="tree-line"><span class="kbd">bars</span> <span class="val">8–16</span></div>
+              <div class="tree-line"><span class="kbd">delivery</span> <span class="attr">whispered</span> <span class="val">/ close</span></div>
+              <div class="tree-line"><span class="kbd">tags</span> <span class="tag">[half-time]</span> <span class="tag">[spacey]</span></div>
+            </div>
+          </details>
+
+          <details open>
+            <summary><span class="tag">[Pre-Chorus]</span> <span class="muted">lift / tension</span></summary>
+            <div class="tree-item">
+              <div class="tree-line"><span class="kbd">bars</span> <span class="val">4–8</span></div>
+              <div class="tree-line"><span class="kbd">movement</span> <span class="val">rise</span> <span class="muted">(harmonic + rhythmic)</span></div>
+              <div class="tree-line"><span class="kbd">tags</span> <span class="tag">[build]</span> <span class="tag">[snare roll]</span></div>
+            </div>
+          </details>
+
+          <details open>
+            <summary><span class="tag">[Chorus]</span> <span class="warn">OVERRIDE</span> <span class="muted">anthem / full stack</span></summary>
+            <div class="tree-item">
+              <div class="tree-line"><span class="kbd">bars</span> <span class="val">8–16</span></div>
+              <div class="tree-line"><span class="kbd">priority</span> <span class="val">local tags</span> <span class="muted">> global style</span></div>
+              <div class="tree-line"><span class="kbd">tags</span> <span class="tag">[hook]</span> <span class="tag">[full band]</span> <span class="tag">[layered]</span></div>
+            </div>
+          </details>
+
+          <details>
+            <summary><span class="tag">[Bridge]</span> <span class="muted">contrast / reset</span></summary>
+            <div class="tree-item">
+              <div class="tree-line"><span class="kbd">bars</span> <span class="val">4–8</span></div>
+              <div class="tree-line"><span class="kbd">tags</span> <span class="tag">[dropout]</span> <span class="tag">[new chords]</span></div>
+            </div>
+          </details>
+
+          <details>
+            <summary><span class="tag">[Outro]</span> <span class="muted">decay / dissolve</span></summary>
+            <div class="tree-item">
+              <div class="tree-line"><span class="kbd">bars</span> <span class="val">4–12</span></div>
+              <div class="tree-line"><span class="kbd">tags</span> <span class="tag">[fade out]</span> <span class="tag">[filter sweep]</span></div>
+            </div>
+          </details>
+
+          <div style="margin-top:12px;" class="comment">
+            # Tip: keep sections consistent. If you need a drastic change, declare it explicitly as an override.
+          </div>
+        </div>
+      </section>
+
+      <!-- CENTER PANE -->
+      <section class="pane">
+        <div class="pane-header">
+          <div class="pane-title">Vocal Control Hierarchy</div>
+          <div class="pane-meta">specificity > inheritance</div>
+        </div>
+        <div class="pane-body">
+          <div class="block">
+            <div class="block-title">
+              <span>1) Global Voice Profile</span>
+              <span class="right">baseline across song</span>
+            </div>
+            <div class="code"><span class="comment"># global voice settings</span>
+<span class="attr">voice.gender</span> = <span class="val">male</span>
+<span class="attr">voice.register</span> = <span class="val">tenor</span>
+<span class="attr">voice.timbre</span> = <span class="val">breathy</span>
+<span class="attr">voice.space</span> = <span class="val">close_mic</span>
+<span class="attr">fx.autotune</span> = <span class="val">off</span></div>
+          </div>
+
+          <div class="block">
+            <div class="block-title">
+              <span>2) Section Delivery Tags</span>
+              <span class="right">attach to labels</span>
+            </div>
+            <div class="code"><span class="tag">[Verse]</span>    <span class="attr">delivery</span>: <span class="attr">whispered</span>, <span class="attr">intimate</span>, <span class="attr">low_intensity</span>
+<span class="tag">[Pre-Chorus]</span> <span class="attr">delivery</span>: <span class="attr">rising</span>, <span class="attr">urgent</span>, <span class="attr">forward</span>
+<span class="tag">[Chorus]</span>   <span class="attr">delivery</span>: <span class="attr">belted</span>, <span class="attr">wide</span>, <span class="attr">anthemic</span></div>
+          </div>
+
+          <div class="block">
+            <div class="block-title">
+              <span>3) Inline Line-Level Overrides</span>
+              <span class="right">highest priority</span>
+            </div>
+            <div class="code"><span class="comment"># inline controls (use sparingly)</span>
+<span class="tag">[Chorus]</span> I can't breathe when you're not here <span class="attr">[belted]</span>
+<span class="tag">[Chorus]</span> the streetlights blur into your name <span class="attr">[raspy]</span>
+<span class="tag">[Chorus]</span> say it like you mean it<span class="attr">[ad-lib]</span><span class="cursor" aria-hidden="true"></span></div>
+            <div class="comment" style="margin-top:8px;">
+              Resolution rule: <span class="muted">Inline</span> > <span class="muted">Section</span> > <span class="muted">Global</span>. Keep overrides local to avoid style drift.
+            </div>
+          </div>
+
+          <div class="ascii" aria-label="ASCII precedence table">┌───────────────────────────────┬───────────────────────────┐
+│ PRECEDENCE                     │ EFFECT                    │
+├───────────────────────────────┼───────────────────────────┤
+│ Inline tag   [raspy]           │ strongest local control    │
+│ Section tag  [Chorus] belted   │ overrides global profile   │
+│ Global voice profile           │ baseline default behavior  │
+└───────────────────────────────┴───────────────────────────┘</div>
+        </div>
+      </section>
+
+      <!-- RIGHT PANE -->
+      <section class="pane">
+        <div class="pane-header">
+          <div class="pane-title">Quick Reference Cheatsheet</div>
+          <div class="pane-meta">commands • tags • patterns</div>
+        </div>
+        <div class="pane-body">
+          <div class="comment"># Use these as “building blocks.” Mix tags with restraint for better model compliance.</div>
+
+          <div class="ascii">┌───────────────┬─────────────────────────────────────────┐
+│ CATEGORY      │ EXAMPLES                                │
+├───────────────┼─────────────────────────────────────────┤
+│ Sections      │ <span class="tag">[Intro]</span> <span class="tag">[Verse]</span> <span class="tag">[Pre-Chorus]</span> <span class="tag">[Chorus]</span> <span class="tag">[Bridge]</span> │
+│ Delivery      │ <span class="attr">[whispered]</span> <span class="attr">[belted]</span> <span class="attr">[intimate]</span> <span class="attr">[raspy]</span> <span class="attr">[ad-lib]</span>  │
+│ Timing        │ <span class="val">8–16 bars</span> • <span class="val">half-time</span> • <span class="val">double-time</span>                 │
+│ Instruments   │ <span class="val">808</span> • <span class="val">dist guitar</span> • <span class="val">airy pad</span> • <span class="val">plucked synth</span>        │
+│ Breaks        │ <span class="tag">[instrumental]</span> • <span class="tag">[guitar solo]</span> • <span class="tag">[drum break]</span>          │
+└───────────────┴─────────────────────────────────────────┘</div>
+
+          <div class="block" style="margin-top:10px;">
+            <div class="block-title">
+              <span>Canonical Tag Syntax</span>
+              <span class="right">clean + predictable</span>
+            </div>
+            <div class="code"><span class="comment"># sections define structure</span>
+<span class="tag">[Verse]</span> line 1...
+<span class="tag">[Verse]</span> line 2...
+
+<span class="comment"># inline tags modify delivery</span>
+line text <span class="attr">[intimate]</span> <span class="attr">[breathy]</span>
+
+<span class="comment"># special blocks</span>
+<span class="tag">[instrumental]</span>
+<span class="tag">[guitar solo]</span></div>
+          </div>
+
+          <div class="comment" style="margin-top:10px;">
+            Anti-pattern: stacking too many tags at once → unstable output.
+            Better: choose <span class="val">1–2</span> delivery tags per line, and keep section tags consistent.
+          </div>
+
+          <div class="ascii" style="margin-top:10px;">┌────────────────────────────────────────────────────────┐
+│ HOTKEYS (MENTAL MODEL)                                  │
+├────────────────────────────────────────────────────────┤
+│ <span class="kbd">G</span> genre anchors the cluster                                │
+│ <span class="kbd">M</span> mood shapes the emotional embedding                       │
+│ <span class="kbd">I</span> instruments define timbre + density                       │
+│ <span class="kbd">V</span> vocals control human focus + narrative delivery           │
+└────────────────────────────────────────────────────────┘</div>
+        </div>
+      </section>
+    </div>
+
+    <div class="statusbar">
+      <div>Style Influence: <strong>80%</strong>  |  Generation: <strong>V5</strong>  |  Mode: <strong>Granular</strong></div>
+      <div class="meter">
+        <span>Signal</span>
+        <div class="bar" aria-label="signal meter"><i></i></div>
+        <span class="muted">OK</span>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

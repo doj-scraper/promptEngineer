@@ -1,0 +1,450 @@
+<DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Specification Spectrum Diagnostic</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #050505;
+            color: #e0e0e0;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            min-height: 100vh;
+            padding: 40px;
+            position: relative;
+            overflow-x: auto;
+        }
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                linear-gradient(90deg, rgba(0,255,255,0.03) 1px, transparent 1px),
+                linear-gradient(rgba(0,255,255,0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 300;
+            letter-spacing: 8px;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            text-shadow: 0 0 20px rgba(0,255,255,0.3);
+        }
+        .subtitle {
+            color: #666;
+            font-size: 1rem;
+            letter-spacing: 2px;
+        }
+        
+        .spectrum-container {
+            position: relative;
+            margin: 60px 0;
+            padding: 40px;
+            background: rgba(0,0,0,0.5);
+            border: 1px solid #222;
+            border-radius: 8px;
+        }
+        .spectrum-bar {
+            height: 60px;
+            background: linear-gradient(90deg, 
+                #0047ff 0%, 
+                #0047ff 20%, 
+                #ffffff 50%, 
+                #ff073a 80%, 
+                #ff073a 100%);
+            border-radius: 4px;
+            position: relative;
+            box-shadow: 0 0 30px rgba(0,0,0,0.5);
+        }
+        
+        .marker {
+            position: absolute;
+            top: -20px;
+            transform: translateX(-50%);
+            text-align: center;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        .marker.under { left: 10%; color: #0047ff; }
+        .marker.optimal { left: 50%; color: #fff; }
+        .marker.over { left: 90%; color: #ff073a; }
+        
+        .marker::after {
+            content: '';
+            position: absolute;
+            top: 25px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 2px;
+            height: 70px;
+            background: currentColor;
+            opacity: 0.5;
+        }
+        
+        .zone-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 80px;
+            padding: 0 10%;
+        }
+        .zone {
+            text-align: center;
+            max-width: 300px;
+        }
+        .zone-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        .zone.under-spec .zone-title { color: #0047ff; }
+        .zone.optimal-spec .zone-title { color: #fff; text-shadow: 0 0 10px rgba(255,255,255,0.5); }
+        .zone.over-spec .zone-title { color: #ff073a; }
+        
+        .zone-desc {
+            font-size: 0.9rem;
+            color: #888;
+            line-height: 1.6;
+        }
+        
+        .oscilloscope {
+            margin: 50px 0;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+        }
+        .scope-panel {
+            background: #0a0a0a;
+            border: 1px solid #222;
+            border-radius: 8px;
+            padding: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+        .scope-panel::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 19px,
+                rgba(0,255,0,0.05) 20px
+            );
+            pointer-events: none;
+        }
+        .scope-label {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #222;
+        }
+        .scope-panel.under .scope-label { color: #0047ff; }
+        .scope-panel.optimal .scope-label { color: #0f0; }
+        .scope-panel.over .scope-label { color: #ff073a; }
+        
+        .waveform {
+            height: 100px;
+            position: relative;
+            margin: 20px 0;
+        }
+        svg {
+            width: 100%;
+            height: 100%;
+        }
+        .wave-path {
+            fill: none;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+        .wave-under { stroke: #0047ff; opacity: 0.6; }
+        .wave-optimal { stroke: #0f0; opacity: 0.9; }
+        .wave-over { stroke: #ff073a; opacity: 0.8; }
+        
+        .symptom-list {
+            list-style: none;
+            font-size: 0.85rem;
+            margin-top: 20px;
+        }
+        .symptom-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid #1a1a1a;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .symptom-list li::before {
+            content: '•';
+            font-weight: bold;
+        }
+        .scope-panel.under .symptom-list li::before { color: #0047ff; }
+        .scope-panel.optimal .symptom-list li::before { color: #0f0; }
+        .scope-panel.over .symptom-list li::before { color: #ff073a; }
+        
+        .treatment {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 4px;
+            border-left: 3px solid;
+            font-size: 0.8rem;
+        }
+        .scope-panel.under .treatment { border-color: #0047ff; }
+        .scope-panel.optimal .treatment { border-color: #0f0; }
+        .scope-panel.over .treatment { border-color: #ff073a; }
+        
+        .example-box {
+            margin: 50px 0;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 30px;
+        }
+        .example-title {
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 20px;
+            color: #888;
+        }
+        .example-row {
+            display: grid;
+            grid-template-columns: 1fr 100px 1fr;
+            gap: 30px;
+            align-items: center;
+            margin: 30px 0;
+            padding: 20px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 4px;
+        }
+        .example-text {
+            font-family: monospace;
+            font-size: 0.9rem;
+            padding: 15px;
+            border-radius: 4px;
+        }
+        .example-text.bad {
+            background: rgba(255,0,0,0.05);
+            border: 1px solid rgba(255,0,0,0.2);
+            color: #ff6666;
+        }
+        .example-text.good {
+            background: rgba(0,255,0,0.05);
+            border: 1px solid rgba(0,255,0,0.2);
+            color: #66ff66;
+        }
+        .example-text.warning {
+            background: rgba(0,100,255,0.05);
+            border: 1px solid rgba(0,100,255,0.2);
+            color: #6699ff;
+        }
+        .arrow {
+            text-align: center;
+            font-size: 1.5rem;
+            color: #555;
+        }
+        .diagnosis {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+        .diagnosis.error { color: #ff073a; }
+        .diagnosis.warning { color: #0047ff; }
+        .diagnosis.success { color: #0f0; }
+        
+        .warning-zones {
+            position: absolute;
+            top: 50px;
+            left: 20%;
+            right: 20%;
+            height: 20px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .warning-marker {
+            width: 40px;
+            height: 40px;
+            background: rgba(255,158,0,0.1);
+            border: 2px solid #ff9e00;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #ff9e00;
+            font-size: 1.2rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Specification Spectrum</h1>
+            <div class="subtitle">Diagnostic Guide for Prompt Optimization</div>
+        </div>
+
+        <div class="spectrum-container">
+            <div class="warning-zones">
+                <div class="warning-marker">!</div>
+                <div class="warning-marker">!</div>
+            </div>
+            
+            <div class="spectrum-bar"></div>
+            
+            <div class="marker under">UNDER</div>
+            <div class="marker optimal">OPTIMAL</div>
+            <div class="marker over">OVER</div>
+            
+            <div class="zone-labels">
+                <div class="zone under-spec">
+                    <div class="zone-title">Under-Specified</div>
+                    <div class="zone-desc">
+                        Single-word genre tags, evaluative without descriptive content. Forces reliance on model prior distribution.
+                    </div>
+                </div>
+                <div class="zone optimal-spec">
+                    <div class="zone-title">Goldilocks Zone</div>
+                    <div class="zone-desc">
+                        40-60 words distributed across GMIV formula. Precise timbral targeting without attribute collapse.
+                    </div>
+                </div>
+                <div class="zone over-spec">
+                    <div class="zone-title">Over-Specified</div>
+                    <div class="zone-desc">
+                        Mutually exclusive requirements, excessive numerical precision, descriptor proliferation beyond 6-8 elements.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="oscilloscope">
+            <div class="scope-panel under">
+                <div class="scope-label">Flatline Pattern — Under-Specified</div>
+                <div class="waveform">
+                    <svg viewBox="0 0 300 100" preserveAspectRatio="none">
+                        <path class="wave-path wave-under" d="M 0 50 Q 75 48 150 50 T 300 50" />
+                        <path class="wave-path wave-under" d="M 0 50 L 300 50" stroke-dasharray="5,5" opacity="0.3"/>
+                    </svg>
+                </div>
+                <ul class="symptom-list">
+                    <li>Genre: "Good music"</li>
+                    <li>Vague mood descriptors</li>
+                    <li>No instrument technique</li>
+                    <li>High output variance</li>
+                </ul>
+                <div class="treatment">
+                    <strong>TREATMENT:</strong> Apply 3-layer descriptors (Source+Technique+Treatment). Add temporal anchors.
+                </div>
+            </div>
+
+            <div class="scope-panel optimal">
+                <div class="scope-label">Clean Waveform — Optimal</div>
+                <div class="waveform">
+                    <svg viewBox="0 0 300 100" preserveAspectRatio="none">
+                        <path class="wave-path wave-optimal" d="M 0 50 Q 30 20 60 50 T 120 50 T 180 50 T 240 50 T 300 50" />
+                    </svg>
+                </div>
+                <ul class="symptom-list">
+                    <li>Compound descriptors</li>
+                    <li>Orthogonal coverage</li>
+                    <li>40-60 word count</li>
+                    <li>Low output variance</li>
+                </ul>
+                <div class="treatment">
+                    <strong>STATUS:</strong> Specification density follows diminishing returns curve. Maintain current parameters.
+                </div>
+            </div>
+
+            <div class="scope-panel over">
+                <div class="scope-label">Erratic Pattern — Over-Specified</div>
+                <div class="waveform">
+                    <svg viewBox="0 0 300 100" preserveAspectRatio="none">
+                        <path class="wave-path wave-over" d="M 0 50 L 20 20 L 40 80 L 60 30 L 80 70 L 100 10 L 120 90 L 140 40 L 160 60 L 180 20 L 200 80 L 220 50 L 240 70 L 260 30 L 280 60 L 300 50" />
+                    </svg>
+                </div>
+                <ul class="symptom-list">
+                    <li>"Exactly 117.3 BPM"</li>
+                    <li>Contradictory parameters</li>
+                    <li>6+ simultaneous elements</li>
+                    <li>Attribute collapse</li>
+                </ul>
+                <div class="treatment">
+                    <strong>TREATMENT:</strong> Identify 3-4 critical attributes. Hierarchical prioritization. Remove redundant descriptors.
+                </div>
+            </div>
+        </div>
+
+        <div class="example-box">
+            <div class="example-title">Case Studies: Prompt Transformation</div>
+            
+            <div class="example-row">
+                <div class="example-text warning">
+                    "Rock music, sad, guitar"
+                </div>
+                <div class="arrow">→</div>
+                <div>
+                    <div class="diagnosis warning">Under-Specified</div>
+                    <div style="font-size: 0.8rem; color: #666; margin-top: 10px;">
+                        Relies entirely on prior distribution. Output: Generic grunge or acoustic ballad? Unpredictable.
+                    </div>
+                </div>
+            </div>
+
+            <div class="example-row">
+                <div class="example-text good">
+                    "1990s Midwest emo, jangly electric guitar with light overdrive, bittersweet nostalgia, mid-2000s warm production, male tenor vocal"
+                </div>
+                <div class="arrow">→</div>
+                <div>
+                    <div class="diagnosis success">Optimal Specification</div>
+                    <div style="font-size: 0.8rem; color: #666; margin-top: 10px;">
+                        18 words. Subgenre granularity + technique + production context. Activated cluster: precise.
+                    </div>
+                </div>
+            </div>
+
+            <div class="example-row">
+                <div class="example-text bad">
+                    "Exactly 117.3 BPM, -14.2 LUFS, Mixolydian mode with Phrygian dominant substitution, sparse minimal arrangement with full orchestral instrumentation, precisely 3 guitars panned at 45° 90° and 135°"
+                </div>
+                <div class="arrow">→</div>
+                <div>
+                    <div class="diagnosis error">Attribute Collapse</div>
+                    <div style="font-size: 0.8rem; color: #666; margin-top: 10px;">
+                        Mutually exclusive (sparse vs orchestral). Excessive precision. Model finds compromise → confused/generic output.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>'''
+
+with open('/mnt/kimi/output/infographic_7_spectrum.html', 'w') as f:
+    f.write(html_design7)
+    
+print("Design 7 created: Specification Spectrum Diagnostic")
