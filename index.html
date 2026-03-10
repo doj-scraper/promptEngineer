@@ -3,737 +3,128 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Prompt Engineering</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <title>Prompt Engineering for AI Music - Interactive Infographics</title>
     <style>
-        :root {
-            --bg-darkest: #050508;
-            --bg-dark: #0a0a0d;
-            --bg-mid: #121216;
-            --bg-light: #1a1a1f;
-            --border: #25252a;
-            --border-hover: #35353a;
-            --text-primary: #e8e8ec;
-            --text-secondary: #888890;
-            --text-muted: #55555a;
-            --gold: #c9a227;
-            --gold-dim: rgba(201, 162, 39, 0.15);
-        }
-
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-        }
-
-        html, body {
-            height: 100%;
-            overflow: hidden;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
         body {
-            background: var(--bg-darkest);
-            color: var(--text-primary);
-            font-family: 'Inter', -apple-system, sans-serif;
-            font-size: 12px;
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            color: #e6e6e6;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            padding: 30px 0;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            font-size: 2.8rem;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #4cc9f0, #4361ee);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.8;
+            max-width: 700px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            padding: 20px;
+        }
+
+        .folder {
+            background: rgba(30, 30, 46, 0.8);
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 2px solid #4361ee;
+        }
+
+        .folder:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(67, 97, 238, 0.4);
+            background: rgba(40, 40, 60, 0.9);
+        }
+
+        .folder-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            color: #4cc9f0;
+        }
+
+        .folder-title {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            color: #4cc9f0;
+        }
+
+        .folder-description {
+            font-size: 1rem;
+            opacity: 0.7;
             line-height: 1.5;
         }
 
-        /* Desktop */
-        .desktop {
-            width: 100vw;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-
-        /* Top Bar */
-        .top-bar {
-            height: 36px;
-            background: var(--bg-dark);
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 20px;
-            flex-shrink: 0;
-        }
-
-        .top-bar-left {
-            display: flex;
-            align-items: center;
-            gap: 24px;
-        }
-
-        .brand {
-            font-weight: 600;
-            font-size: 11px;
-            letter-spacing: 0.5px;
-            color: var(--text-primary);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .brand::before {
-            content: '';
-            width: 8px;
-            height: 8px;
-            background: var(--gold);
-            border-radius: 2px;
-        }
-
-        .menu-btn {
-            padding: 4px 12px;
-            color: var(--text-secondary);
-            font-size: 11px;
-            cursor: pointer;
-            border-radius: 4px;
-            transition: all 0.15s;
-            position: relative;
-        }
-
-        .menu-btn:hover {
-            color: var(--text-primary);
-            background: var(--bg-mid);
-        }
-
-        /* Dropdown */
-        .dropdown {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            margin-top: 4px;
-            background: var(--bg-light);
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            padding: 6px;
-            min-width: 180px;
-            display: none;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
-            z-index: 100;
-        }
-
-        .dropdown.show {
-            display: block;
-        }
-
-        .dropdown-item {
-            padding: 6px 10px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 11px;
-            color: var(--text-secondary);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .dropdown-item:hover {
-            background: var(--bg-mid);
-            color: var(--text-primary);
-        }
-
-        .dropdown-divider {
-            height: 1px;
-            background: var(--border);
-            margin: 6px 0;
-        }
-
-        .dropdown-item .num {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 9px;
-            color: var(--text-muted);
-            width: 16px;
-        }
-
-        .top-bar-right {
-            font-size: 11px;
-            color: var(--text-secondary);
-            font-family: 'JetBrains Mono', monospace;
-        }
-
-        /* Main Workspace */
-        .workspace {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 24px;
-        }
-
-        /* Window */
-        .window {
-            width: 100%;
-            max-width: 1100px;
-            height: 100%;
-            max-height: 750px;
-            background: var(--bg-mid);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-
-        /* Window Header */
-        .window-header {
-            height: 40px;
-            background: var(--bg-light);
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 0 16px;
-            position: relative;
-        }
-
-        .window-title {
-            font-size: 12px;
-            font-weight: 500;
-            color: var(--text-primary);
-        }
-
-        .window-close {
-            position: absolute;
-            right: 16px;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 20px;
-            height: 20px;
-            display: flex;
-            align-items: flex-start;
-            justify-content: center;
-            cursor: pointer;
-            color: var(--gold);
-            font-size: 14px;
-            line-height: 1;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.15s;
-            padding-top: 2px;
-        }
-
-        .window-close.show {
-            opacity: 1;
-            pointer-events: auto;
-        }
-
-        .window-close:hover {
-            color: #e0b838;
-        }
-
-        /* Window Content */
-        .window-content {
-            flex: 1;
-            overflow: auto;
-            position: relative;
-        }
-
-        /* Grid View */
-        .view-grid {
-            padding: 32px;
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-            gap: 20px;
-            align-content: start;
-        }
-
-        .file-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 20px 12px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.15s;
-            border: 1px solid transparent;
-        }
-
-        .file-item:hover {
-            background: var(--bg-light);
-            border-color: var(--border);
-        }
-
-        .file-icon {
-            width: 44px;
-            height: 44px;
-            margin-bottom: 12px;
-            position: relative;
-        }
-
-        .icon-signal {
-            background: linear-gradient(180deg, #222228 0%, #16161a 100%);
-            border: 1px solid var(--border);
-            border-radius: 4px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 3px;
-        }
-
-        .icon-signal::before {
-            content: '';
-            width: 22px;
-            height: 2px;
-            background: linear-gradient(90deg, var(--gold), #e0b838);
-            border-radius: 1px;
-        }
-
-        .icon-signal::after {
-            content: '';
-            width: 4px;
-            height: 4px;
-            background: var(--text-muted);
-            border-radius: 50%;
-        }
-
-        .icon-blueprint {
-            background: #0a1420;
-            border: 1px solid rgba(201, 162, 39, 0.25);
-            border-radius: 4px;
-            background-image: 
-                linear-gradient(rgba(201, 162, 39, 0.08) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(201, 162, 39, 0.08) 1px, transparent 1px);
-            background-size: 8px 8px;
-        }
-
-        .icon-gmiv {
-            background: #000;
-            border: 1px solid var(--border);
-            border-radius: 4px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 2px;
-            font-weight: 800;
-            font-size: 13px;
-        }
-
-        .icon-gmiv .g { color: #fff; }
-        .icon-gmiv .m { color: var(--gold); }
-        .icon-gmiv .i { color: #7cb518; }
-        .icon-gmiv .v { color: #e0b838; }
-
-        .icon-hierarchy {
-            background: var(--bg-light);
-            border: 1px solid var(--border);
-            border-radius: 4px;
-            display: grid;
-            grid-template-columns: repeat(3, 9px);
-            gap: 3px;
-            align-content: center;
-            justify-content: center;
-        }
-
-        .icon-hierarchy .cell {
-            width: 9px;
-            height: 9px;
-            background: var(--border);
-            border-radius: 1px;
-        }
-
-        .icon-hierarchy .cell.active {
-            background: var(--gold);
-        }
-
-        .icon-crt {
-            background: #000;
-            border: 1px solid var(--border);
-            border-radius: 4px;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 6px;
-            color: #7cb518;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .icon-encyclopedia {
-            background: var(--bg-light);
-            border: 1px solid var(--border);
-            border-radius: 4px;
-            display: grid;
-            grid-template-columns: repeat(3, 9px);
-            gap: 2px;
-            align-content: center;
-            justify-content: center;
-        }
-
-        .icon-encyclopedia .tag {
-            height: 7px;
-            background: var(--border);
-            border-radius: 1px;
-        }
-
-        .icon-meta {
-            background: var(--bg-light);
-            border: 1px solid var(--border);
-            border-radius: 4px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .icon-meta::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 4px;
-            right: 4px;
-            height: 2px;
-            background: linear-gradient(90deg, transparent, var(--gold), transparent);
-            transform: translateY(-50%);
-        }
-
-        .file-name {
-            font-size: 11px;
-            color: var(--text-primary);
+        footer {
             text-align: center;
-            line-height: 1.4;
+            padding: 30px 0;
+            margin-top: 40px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        .file-meta {
-            font-size: 9px;
-            color: var(--text-muted);
-            margin-top: 4px;
-            font-family: 'JetBrains Mono', monospace;
-        }
-
-        /* Infographic View */
-        .view-infographic {
-            display: none;
-            width: 100%;
-            height: 100%;
-        }
-
-        .view-infographic iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-            background: var(--bg-darkest);
-        }
-
-        /* Modal */
-        .modal-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.7);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            backdrop-filter: blur(4px);
-        }
-
-        .modal-overlay.show {
-            display: flex;
-        }
-
-        .modal {
-            background: var(--bg-light);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            width: 100%;
-            max-width: 400px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
-        }
-
-        .modal-header {
-            padding: 20px 20px 0;
-            display: flex;
-            justify-content: flex-end;
-        }
-
-        .modal-close {
-            width: 28px;
-            height: 28px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            color: var(--gold);
-            font-size: 18px;
-            line-height: 1;
-            border-radius: 4px;
-            transition: all 0.15s;
-        }
-
-        .modal-close:hover {
-            background: var(--gold-dim);
-        }
-
-        .modal-body {
-            padding: 0 24px 24px;
-        }
-
-        .modal-title {
-            font-size: 16px;
-            font-weight: 600;
-            margin-bottom: 12px;
-            color: var(--text-primary);
-        }
-
-        .modal-text {
-            font-size: 12px;
-            line-height: 1.7;
-            color: var(--text-secondary);
-        }
-
-        /* Scrollbar */
-        ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: transparent;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: var(--border);
-            border-radius: 3px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: var(--border-hover);
+        .current-year {
+            color: #4cc9f0;
         }
     </style>
 </head>
 <body>
-    <div class="desktop">
-        <!-- Top Bar -->
-        <div class="top-bar">
-            <div class="top-bar-left">
-                <div class="brand">PromptEngineer OS</div>
-                <div class="menu-btn" onclick="toggleDropdown('window-dropdown')">
-                    Window
-                    <div class="dropdown" id="window-dropdown">
-                        <div class="dropdown-item" onclick="openInfographic('infographic_1_signal_flow.html', 'Signal Flow')">
-                            <span class="num">01</span>
-                            <span>Signal Flow</span>
-                        </div>
-                        <div class="dropdown-item" onclick="openInfographic('infographic_2_blueprint.html', 'Blueprint')">
-                            <span class="num">02</span>
-                            <span>Blueprint</span>
-                        </div>
-                        <div class="dropdown-item" onclick="openInfographic('infographic_3_gmiv_formula.html', 'GMIV Formula')">
-                            <span class="num">03</span>
-                            <span>GMIV Formula</span>
-                        </div>
-                        <div class="dropdown-item" onclick="openInfographic('infographic_4_hierarchy_dashboard.html', 'Hierarchy')">
-                            <span class="num">04</span>
-                            <span>Hierarchy</span>
-                        </div>
-                        <div class="dropdown-item" onclick="openInfographic('infographic_5_meta_tag_command_center.html', 'Command Center')">
-                            <span class="num">05</span>
-                            <span>Command Center</span>
-                        </div>
-                        <div class="dropdown-item" onclick="openInfographic('infographic_6_meta_tag_encyclopedia.html', 'Encyclopedia')">
-                            <span class="num">06</span>
-                            <span>Encyclopedia</span>
-                        </div>
-                        <div class="dropdown-divider"></div>
-                        <div class="dropdown-item" onclick="openInfographic('meta.html', 'Spectrum Diagnostic')">
-                            <span class="num">T</span>
-                            <span>Spectrum Diagnostic</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="menu-btn" onclick="openModal('about')">About</div>
-                <div class="menu-btn" onclick="openModal('help')">Help</div>
-            </div>
-            <div class="top-bar-right" id="location-indicator">
-                Navigation
-            </div>
-        </div>
+    <div class="container">
+        <header>
+            <h1>Prompt Engineering for AI Music</h1>
+            <p class="subtitle">Interactive Infographics & Visual Guides for Crafting Effective Prompts in AI Music Generation</p>
+        </header>
 
-        <!-- Workspace -->
-        <div class="workspace">
-            <div class="window">
-                <!-- Window Header -->
-                <div class="window-header">
-                    <span class="window-title" id="window-title">All Infographics</span>
-                    <span class="window-close" id="window-close" onclick="closeInfographic()">ˣ</span>
-                </div>
+        <main class="dashboard">
+            <div class="folder" onclick="location.href='/existing_infographics';">
+                <div class="folder-icon">📁</div>
+                <h2 class="folder-title">Existing Infographics</h2>
+                <p class="folder-description">Browse the original collection of interactive guides and visual resources for AI music prompt engineering</p>
+            </div>
+        </main>
 
-                <!-- Window Content -->
-                <div class="window-content">
-                    <!-- Grid View -->
-                    <div class="view-grid" id="view-grid">
-                        <div class="file-item" onclick="openInfographic('infographic_1_signal_flow.html', 'Signal Flow')">
-                            <div class="file-icon icon-signal"></div>
-                            <div class="file-name">Signal Flow</div>
-                            <div class="file-meta">01</div>
-                        </div>
-                        <div class="file-item" onclick="openInfographic('infographic_2_blueprint.html', 'Blueprint')">
-                            <div class="file-icon icon-blueprint"></div>
-                            <div class="file-name">Blueprint</div>
-                            <div class="file-meta">02</div>
-                        </div>
-                        <div class="file-item" onclick="openInfographic('infographic_3_gmiv_formula.html', 'GMIV Formula')">
-                            <div class="file-icon icon-gmiv">
-                                <span class="g">G</span>
-                                <span class="m">M</span>
-                                <span class="i">I</span>
-                                <span class="v">V</span>
-                            </div>
-                            <div class="file-name">GMIV Formula</div>
-                            <div class="file-meta">03</div>
-                        </div>
-                        <div class="file-item" onclick="openInfographic('infographic_4_hierarchy_dashboard.html', 'Hierarchy')">
-                            <div class="file-icon icon-hierarchy">
-                                <div class="cell"></div>
-                                <div class="cell active"></div>
-                                <div class="cell"></div>
-                                <div class="cell"></div>
-                                <div class="cell active"></div>
-                                <div class="cell"></div>
-                                <div class="cell active"></div>
-                                <div class="cell"></div>
-                                <div class="cell"></div>
-                            </div>
-                            <div class="file-name">Hierarchy</div>
-                            <div class="file-meta">04</div>
-                        </div>
-                        <div class="file-item" onclick="openInfographic('infographic_5_meta_tag_command_center.html', 'Command Center')">
-                            <div class="file-icon icon-crt">&gt;_</div>
-                            <div class="file-name">Command Center</div>
-                            <div class="file-meta">05</div>
-                        </div>
-                        <div class="file-item" onclick="openInfographic('infographic_6_meta_tag_encyclopedia.html', 'Encyclopedia')">
-                            <div class="file-icon icon-encyclopedia">
-                                <div class="tag"></div>
-                                <div class="tag"></div>
-                                <div class="tag"></div>
-                                <div class="tag"></div>
-                                <div class="tag"></div>
-                                <div class="tag"></div>
-                            </div>
-                            <div class="file-name">Encyclopedia</div>
-                            <div class="file-meta">06</div>
-                        </div>
-                        <div class="file-item" onclick="openInfographic('meta.html', 'Spectrum Diagnostic')">
-                            <div class="file-icon icon-meta"></div>
-                            <div class="file-name">Spectrum Diagnostic</div>
-                            <div class="file-meta">TOOL</div>
-                        </div>
-                    </div>
-
-                    <!-- Infographic View -->
-                    <div class="view-infographic" id="view-infographic">
-                        <iframe id="infographic-frame" src=""></iframe>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modals -->
-    <div class="modal-overlay" id="modal-about" onclick="closeModalOnOverlay(event, 'about')">
-        <div class="modal">
-            <div class="modal-header">
-                <div class="modal-close" onclick="closeModal('about')">ˣ</div>
-            </div>
-            <div class="modal-body">
-                <h2 class="modal-title">About</h2>
-                <p class="modal-text">
-                    Prompt Engineering for AI Music Generation is a collection of interactive visual guides and methodologies for crafting effective prompts that guide AI models to generate music with specific stylistic, emotional, and structural characteristics.
-                </p>
-            </div>
-        </div>
-    </div>
-
-    <div class="modal-overlay" id="modal-help" onclick="closeModalOnOverlay(event, 'help')">
-        <div class="modal">
-            <div class="modal-header">
-                <div class="modal-close" onclick="closeModal('help')">ˣ</div>
-            </div>
-            <div class="modal-body">
-                <h2 class="modal-title">Help</h2>
-                <p class="modal-text">
-                    Click on any infographic to view it within the window. Use the Window menu to quickly navigate between different infographics. Click the golden ˣ to close an infographic and return to the navigation view.
-                </p>
-            </div>
-        </div>
+        <footer>
+            <p>© <span class="current-year">2026</span> Prompt Engineering for AI Music - Interactive Infographics</p>
+        </footer>
     </div>
 
     <script>
-        // Dropdown Management
-        function toggleDropdown(id) {
-            const dropdown = document.getElementById(id);
-            const isShowing = dropdown.classList.contains('show');
-            
-            // Close all dropdowns
-            document.querySelectorAll('.dropdown').forEach(d => d.classList.remove('show'));
-            
-            // Toggle current
-            if (!isShowing) {
-                dropdown.classList.add('show');
-            }
-        }
-
-        // Close dropdowns when clicking outside
-        document.addEventListener('click', (e) => {
-            if (!e.target.closest('.menu-btn')) {
-                document.querySelectorAll('.dropdown').forEach(d => d.classList.remove('show'));
-            }
-        });
-
-        // View Management
-        let currentLocation = 'Navigation';
-
-        function openInfographic(url, title) {
-            document.getElementById('infographic-frame').src = url;
-            document.getElementById('view-grid').style.display = 'none';
-            document.getElementById('view-infographic').style.display = 'block';
-            document.getElementById('window-title').textContent = title;
-            document.getElementById('window-close').classList.add('show');
-            document.getElementById('location-indicator').textContent = title;
-            currentLocation = title;
-            
-            // Close dropdown if open
-            document.querySelectorAll('.dropdown').forEach(d => d.classList.remove('show'));
-        }
-
-        function closeInfographic() {
-            document.getElementById('infographic-frame').src = '';
-            document.getElementById('view-infographic').style.display = 'none';
-            document.getElementById('view-grid').style.display = 'grid';
-            document.getElementById('window-title').textContent = 'All Infographics';
-            document.getElementById('window-close').classList.remove('show');
-            document.getElementById('location-indicator').textContent = 'Navigation';
-            currentLocation = 'Navigation';
-        }
-
-        // Modal Management
-        function openModal(type) {
-            document.getElementById(`modal-${type}`).classList.add('show');
-        }
-
-        function closeModal(type) {
-            document.getElementById(`modal-${type}`).classList.remove('show');
-        }
-
-        function closeModalOnOverlay(event, type) {
-            if (event.target === event.currentTarget) {
-                closeModal(type);
-            }
-        }
-
-        // Keyboard shortcuts
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') {
-                // Close modals first
-                const openModal = document.querySelector('.modal-overlay.show');
-                if (openModal) {
-                    openModal.classList.remove('show');
-                } else if (currentLocation !== 'Navigation') {
-                    closeInfographic();
-                }
-            }
+        document.addEventListener('DOMContentLoaded', function() {
+            const yearSpan = document.querySelector('.current-year');
+            yearSpan.textContent = new Date().getFullYear();
         });
     </script>
 </body>
